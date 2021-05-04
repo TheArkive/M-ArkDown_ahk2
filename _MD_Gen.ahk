@@ -23,7 +23,7 @@ options := {css:css
 
 html := make_html(md_txt, options)
 
-FileAppend html, dir "\" file_title ".html"
+FileAppend html, dir "\" file_title ".html", "UTF-8"
 
 Run dir "\" file_title ".html" ; open and test
 

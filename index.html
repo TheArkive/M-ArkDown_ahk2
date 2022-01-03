@@ -88,7 +88,7 @@ body {
     overflow-y: auto;
     width: 431px;
     /* height: initial; */
-    height: 506px;
+    height: 634px;
     max-height: calc(100vh - 40px);
     transition-duration: 0.25s;
 }
@@ -106,7 +106,8 @@ body {
     color: cyan;
 }
 
-:target { color: var(--so4); }
+:target a:visited { color: var(--so4); }
+:target a:visited:hover, :target a:visited:hover .link { color: var(--link-hover); }
 :target.underline { border-color: var(--so4); }
 
 img { opacity: 0.5; }
@@ -122,6 +123,19 @@ a:visited { color: var(--link); }
 
 h1, h2, h3, h4, h5, h6
 { font-weight:bold; color:var(--header); margin-top: 24px; margin-bottom: 16px; }
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a,
+h1:hover a, h2:hover a, h3:hover a, h4:hover a, h5:hover a, h6:hover a
+{ text-decoration: none; }
+
+h1 a .link, h2 a .link, h3 a .link, h4 a .link, h5 a .link, h6 a .link
+{ position: relative; float: left; margin-left: -20px; display: none; }
+
+h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover
+{ border-color: var(--link-hover); color: var(--link-hover); }
+
+h1:hover a .link, h2:hover a .link, h3:hover a .link, h4:hover a .link, h5:hover a .link, h6:hover a .link
+{ display: inline; }
 
 .underline { border-bottom: 1px solid #00ACAF; }
 h1.underline { padding-bottom: 10px; }
@@ -213,6 +227,9 @@ summary { margin-bottom: 16px; }
 <a href="https://thearkive.github.io/M-ArkDown_ahk2/" target="_blank" rel="noopener noreferrer"><div class="toc-item">Home</div></a>
 <a href="https://github.com/TheArkive/M-ArkDown_ahk2/archive/refs/heads/master.zip" target="_blank" rel="noopener noreferrer"><div class="toc-item">Download</div></a>
 <a href="https://github.com/TheArkive/M-ArkDown_ahk2" target="_blank" rel="noopener noreferrer"><div class="toc-item">Source</div></a><hr><a href="#markdown-cheatsheet"><div class="toc-item">• (M)ArkDown Cheatsheet</div></a>
+<a href="#emphesis-italics"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Emphesis (Italics)</div></a>
+<a href="#strong-bold"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Strong (Bold)</div></a>
+<a href="#emphesis-+-strong-italic-+-bold"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Emphesis + Strong (Italic + Bold)</div></a>
 <a href="#spacing"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Spacing</div></a>
 <a href="#table-of-contents-and-navigation-code"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Table of Contents and Navigation code</div></a>
 <a href="#heading-code"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Heading code</div></a>
@@ -223,9 +240,19 @@ summary { margin-bottom: 16px; }
 <a href="#ordered-lists"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Ordered Lists</div></a>
 <a href="#tables"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Tables</div></a>
 <a href="#spoiler"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Spoiler</div></a>
-<a href="#thats-all-folks"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Thats all folks!</div></a></div></div><div id="body-container"><div id="main">
-<h1 id="markdown-cheatsheet" >(M)ArkDown Cheatsheet</h1>
-<h2 id="spacing"  class="underline">Spacing</h2>
+<a href="#thats-all-folks"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Thats all folks!</div></a>
+<a href="#to-do-list:"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• To-Do List:</div></a></div></div><div id="body-container"><div id="main">
+<h1 id="markdown-cheatsheet" >(M)ArkDown Cheatsheet<a href="#markdown-cheatsheet"><span class="link">•</span></a></h1>
+<h2 id="emphesis-italics"  class="underline">Emphesis (Italics)<a href="#emphesis-italics"><span class="link">•</span></a></h2>
+<p><em>This text has emphesis.</em> <code>*This text has emphesis.*</code></p>
+<p><em>This text also has emphesis.</em> <code>_This text also has emphesis._</code></p>
+<h2 id="strong-bold"  class="underline">Strong (Bold)<a href="#strong-bold"><span class="link">•</span></a></h2>
+<p><strong>This text is strong.</strong> <code>**This text is strong.**</code></p>
+<p><strong>This text is strong.</strong> <code>__This text is strong.__</code></p>
+<h2 id="emphesis-+-strong-italic-+-bold"  class="underline">Emphesis + Strong (Italic + Bold)<a href="#emphesis-+-strong-italic-+-bold"><span class="link">•</span></a></h2>
+<p><em><strong>This text has strong + emphesis.</strong></em> <code>***This text has strong + emphesis.***</code></p>
+<p><em><strong>This text has strong + emphesis.</strong></em> <code>___This text has strong + emphesis.___</code></p>
+<h2 id="spacing"  class="underline">Spacing<a href="#spacing"><span class="link">•</span></a></h2>
 <p>As with regular markdown, spacing is mostly automatic.  If you want to combine manual line breaks use the backslash <code>\</code>.</p>
 <p>Testing a manual line<br>break.</p>
 <pre><code>Testing a manual line\
@@ -241,35 +268,35 @@ break.</code></pre>
  \
 Next visible line.</code></pre>
 <p>Here is a line with 2 blank lines beneath.<br> <br> <br>Next visible line.</p>
-<h2 id="table-of-contents-and-navigation-code"  class="underline">Table of Contents and Navigation code</h2>
+<h2 id="table-of-contents-and-navigation-code"  class="underline">Table of Contents and Navigation code<a href="#table-of-contents-and-navigation-code"><span class="link">•</span></a></h2>
 <p>You can place the <code>&lt;toc&gt;</code> and <code>&lt;nav|...&gt;</code> tags anywhere in your document.</p>
 <p>Example Code:</p>
 <pre><code>&lt;toc&gt;
 &lt;nav|asdf1=www.google.com|asdf2=www.yahoo.com&gt;</code></pre>
 <p>You can see the toc and nav icon in the top right: <code>&#9776;</code></p>
-<h2 id="heading-code"  class="underline">Heading code</h2>
+<h2 id="heading-code"  class="underline">Heading code<a href="#heading-code"><span class="link">•</span></a></h2>
 <p>Headings, with or without underline.  If you want automatic underline for h1 and h2 without adding <code>[underline]</code>, just change the css (usually setting border-bottom property is best).</p>
 <p>Example Code:</p>
 <pre><code>#### Heading 4
 ##### Heading 5[underline]
 ###### Heading 6</code></pre>
-<p><details><summary class="spoiler">Click to see Headings</summary><h4 id="heading-4" >Heading 4</h4>
-<h5 id="heading-5"  class="underline">Heading 5</h5>
-<h6 id="heading-6" >Heading 6</h6></details></p>
-<h2 id="blockquote-code"  class="underline">Blockquote code</h2>
+<p><details><summary class="spoiler">Click to see Headings</summary><h4 id="heading-4" >Heading 4<a href="#heading-4"><span class="link">•</span></a></h4>
+<h5 id="heading-5"  class="underline">Heading 5<a href="#heading-5"><span class="link">•</span></a></h5>
+<h6 id="heading-6" >Heading 6<a href="#heading-6"><span class="link">•</span></a></h6></details></p>
+<h2 id="blockquote-code"  class="underline">Blockquote code<a href="#blockquote-code"><span class="link">•</span></a></h2>
 <blockquote><p>This is testing a blockquote.</p>
 <p><a href="https://www.google.com" target="_blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="_blank" rel="noopener noreferrer">Yahoo link</a></p>
 <p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
 <p><code>Even:</code></p>
-<h1 id="headings" >Headings</h1>
+<h1 id="headings" >Headings<a href="#headings"><span class="link">•</span></a></h1>
 <p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>\</code>).</p>
 <blockquote><p>This is a nested blockquote.</p>
 <p><a href="https://www.google.com" target="_blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="_blank" rel="noopener noreferrer">Yahoo link</a></p>
 <p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
 <p><code>Even:</code></p>
-<h1 id="headings" >Headings</h1>
+<h1 id="headings" >Headings<a href="#headings"><span class="link">•</span></a></h1>
 <p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>\</code>).</p></blockquote>
-<table class="normal"><tr><th align="right"> <em>right:</em></th><th align="left"> <del>left</del>  </th><th align="center">:center not formatted:</th></tr><tr></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="center">bbbbbbbbbbbbbbbbbbbbbb</td><td align="right">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="center">2</td><td align="right">3</td></tr><tr><td align="left">manual line<br>break</td><td align="center">data2</td><td align="right">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="center"><strong>bold</strong>  <code>code</code></td><td align="right"><em>emphesis</em></td></tr></table></blockquote>
+<table class="normal"><tr><th align="right"> <em>right:</em></th><th align="left"> <del>left</del>  </th><th align="center">:center:</th></tr><tr></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="center">bbbbbbbbbbbbbbbbbbbbbb</td><td align="right">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="center">2</td><td align="right">3</td></tr><tr><td align="left">manual line<br>break</td><td align="center">data2</td><td align="right">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="center"><strong>bold</strong>  <code>code</code></td><td align="right"><em>emphesis</em></td></tr></table></blockquote>
 <p>Example Code:</p>
 <pre><code>&gt; This is testing a blockquote.
 &gt;
@@ -295,13 +322,13 @@ Next visible line.</code></pre>
 &gt; &gt; You can add manual line breaks\
 &gt; &gt; with a backslash (`\`).
 &gt;
-&gt; | *right\:*:| ~~left~~  |:\:center not formatted\::|
+&gt; | *right\:*:| ~~left~~  |:\:center\::|
 &gt; |---------|:-------:|--------:|
 &gt; |aaaaaaaaaaaaaaaaaaaa        |bbbbbbbbbbbbbbbbbbbbbb        |ccccccccccccccccccccc         |
 &gt; |1        |2        |3         |
 &gt; |manual line&lt;br&gt;break | data2   | data3     |
 &gt; | [link](http://test.com) | **bold**  `code` | *emphesis* |</code></pre>
-<h2 id="images"  class="underline">Images</h2>
+<h2 id="images"  class="underline">Images<a href="#images"><span class="link">•</span></a></h2>
 <p>The 1st pic has width=200 set and is embedded in a hyperlink.</p>
 <p>The 2nd pic is separated by a space, and on the same line having height=200 set.  If a pic is too large to fit on the same line, it will usually be put on the next line down.</p>
 <p>The 3rd pic has no dimensions set and is full size.</p>
@@ -312,8 +339,8 @@ Next visible line.</code></pre>
 
 Third pic:\
 ![Label 3](pic.jpg)</code></pre>
-<h2 id="horizontal-rule-&lt;hr&gt;"  class="underline">Horizontal Rule &lt;hr&gt;</h2>
-<p>Just like regular markdown, the <code>&lt;hr&gt;</code> can be added by <code>---</code> or <code>===</code> but you can also specify style.</p>
+<h2 id="horizontal-rule-&lt;hr&gt;"  class="underline">Horizontal Rule &lt;hr&gt;<a href="#horizontal-rule-&lt;hr&gt;"><span class="link">•</span></a></h2>
+<p>Just like regular markdown, the <code>&lt;hr&gt;</code> can be added by <code>---</code>, <code>___</code>, and <code>***</code>.  In my version of markdown you can also use <code>===</code> for a double underline, and you can also specify style in an extra <code>[tag]</code>.  If you use <code>===</code> without a <code>[tag]</code> then it makes a normal single line.</p>
 <p><details><summary class="spoiler">Click to see &lt;hr&gt;</summary><hr style="">
 <hr style="">
 <hr style="border-top-color: red; border-top-style: solid;">
@@ -328,11 +355,11 @@ Third pic:\
 ===[4px dashed blue]
 ===[4px double pink]</code></pre>
 <p>Please note, that in order to show a <strong>double</strong> line you must specify a style width of at least 3px or greater to actually see both lines.</p>
-<h2 id="unordered-lists"  class="underline">Unordered Lists</h2>
+<h2 id="unordered-lists"  class="underline">Unordered Lists<a href="#unordered-lists"><span class="link">•</span></a></h2>
 <ul>
-<li>item 1</li>
-<li>item 2</li>
-<li>item 3<br>item 3 line 2<br>item 3 line 3<br>item 3 line 4</li>
+<li>item 1  <!--* this is a wasted comment --></li>
+<li>item 2  <!--* this is a wasted comment --></li>
+<li>item 3\ <!--* this is a wasted comment -->item 3 line 2<br>item 3 line 3<br>item 3 line 4</li>
 <li>item 4
 <ul>
 <li>item 1 <a href="http://link.com" target="_blank" rel="noopener noreferrer">a link</a></li>
@@ -359,18 +386,18 @@ Third pic:\
 item 3 line 2\
 item 3 line 3\
 item 3 line 4
-* item 4
-  * item 1 [a link](http://link.com)
-  * item 2
-    * *item 1*
-    * item 2\
++ item 4
+  + item 1 [a link](http://link.com)
+  + item 2
+    + *item 1*
+    + item 2\
     **item 2 line 2**
-      * item 1
-      * item 2
-* item 5
-  * item 1
-  * item 2</code></pre>
-<h2 id="ordered-lists"  class="underline">Ordered Lists</h2>
+      - item 1
+      - item 2
+- item 5
+  - item 1
+  - item 2</code></pre>
+<h2 id="ordered-lists"  class="underline">Ordered Lists<a href="#ordered-lists"><span class="link">•</span></a></h2>
 <ol type="A">
 <li>asdf 1</li>
 <li><strong>asdf 2</strong> text
@@ -418,20 +445,22 @@ C. asdf 3
   b) text `blah 2`
   c) blah 3
 D. asdf 4</code></pre>
-<h2 id="tables"  class="underline">Tables</h2>
+<h2 id="tables"  class="underline">Tables<a href="#tables"><span class="link">•</span></a></h2>
 <p>Tables are the same as regular markdown except for one key difference:  you can set the alignment of the headers and data separately.</p>
 <p>Like markdown you use the colon <code>:</code> to determine alignment: <code>right:</code> , <code>:center:</code> , <code>left</code> (no colon for left).</p>
 <p>If you want to use a colon in a header you can escape it with backslash: <code>\:</code></p>
 <p>Column headers and data will also take most inline formatting, like <em>emphesis</em> or <strong>strong</strong>.</p>
 <p>Example Code:</p>
-<pre><code>| *right\:*:| ~~left~~  |:\:center not formatted\::|
-|---------|:-------:|--------:|
-|aaaaaaaaaaaaaaaaaaaa        |bbbbbbbbbbbbbbbbbbbbbb        |ccccccccccccccccccccc         |
-|1        |2        |3         |
-|manual line&lt;br&gt;break | data2   | data3     |
-| [link](http://test.com) | **bold**  `code` | *emphesis* |</code></pre>
-<table class="normal"><tr><th align="right"> <em>right:</em></th><th align="left"> <del>left</del>  </th><th align="center">:center not formatted:</th></tr><tr></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="center">bbbbbbbbbbbbbbbbbbbbbb</td><td align="right">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="center">2</td><td align="right">3</td></tr><tr><td align="left">manual line<br>break</td><td align="center">data2</td><td align="right">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="center"><strong>bold</strong>  <code>code</code></td><td align="right"><em>emphesis</em></td></tr></table>
-<h2 id="spoiler"  class="underline">Spoiler</h2>
+<pre><code>|               *right\:*:| ~~left~~             |     :center\::      |
+|-------------------------|---------------------:|:-------------------:|
+|aaaaaaaaaaaaaaaaaaaa     |bbbbbbbbbbbbbbbbbbbbbb|ccccccccccccccccccccc|
+|1                        |2                     |3                    |
+|manual line&lt;br&gt;break     | data2                | data3               |
+| [link](http://test.com) | **bold**  `code`     | *emphesis*          |
+
+The table/columns do not have to be perfectly spaced as shown above.</code></pre>
+<table class="normal"><tr><th align="right">               <em>right:</em></th><th align="left"> <del>left</del>             </th><th align="center">center:</th></tr><tr></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="right">bbbbbbbbbbbbbbbbbbbbbb</td><td align="center">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="right">2</td><td align="center">3</td></tr><tr><td align="left">manual line<br>break</td><td align="right">data2</td><td align="center">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="right"><strong>bold</strong>  <code>code</code></td><td align="center"><em>emphesis</em></td></tr></table>
+<h2 id="spoiler"  class="underline">Spoiler<a href="#spoiler"><span class="link">•</span></a></h2>
 <p>Shortcut code:</p>
 <pre><code>&lt;spoiler=Spoiler Title&gt;
 spoiler content!
@@ -444,15 +473,19 @@ plus a little more in the example... just to show off :P
 <p><a href="https://www.google.com" target="_blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="_blank" rel="noopener noreferrer">Yahoo link</a></p>
 <p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
 <p><code>Even:</code></p>
-<h1 id="headings" >Headings</h1>
+<h1 id="headings" >Headings<a href="#headings"><span class="link">•</span></a></h1>
 <p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>\</code>).</p>
 <blockquote><p>This is a nested blockquote.</p>
 <p><a href="https://www.google.com" target="_blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="_blank" rel="noopener noreferrer">Yahoo link</a></p>
 <p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
 <p><code>Even:</code></p>
-<h1 id="headings" >Headings</h1>
+<h1 id="headings" >Headings<a href="#headings"><span class="link">•</span></a></h1>
 <p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>\</code>).</p></blockquote>
-<table class="normal"><tr><th align="right"> <em>right:</em></th><th align="left"> <del>left</del>  </th><th align="center">:center not formatted:</th></tr><tr></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="center">bbbbbbbbbbbbbbbbbbbbbb</td><td align="right">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="center">2</td><td align="right">3</td></tr><tr><td align="left">manual line<br>break</td><td align="center">data2</td><td align="right">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="center"><strong>bold</strong>  <code>code</code></td><td align="right"><em>emphesis</em></td></tr></table></blockquote></details></p>
+<table class="normal"><tr><th align="right"> <em>right:</em></th><th align="left"> <del>left</del>  </th><th align="center">:center:</th></tr><tr></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="center">bbbbbbbbbbbbbbbbbbbbbb</td><td align="right">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="center">2</td><td align="right">3</td></tr><tr><td align="left">manual line<br>break</td><td align="center">data2</td><td align="right">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="center"><strong>bold</strong>  <code>code</code></td><td align="right"><em>emphesis</em></td></tr></table></blockquote></details></p>
 <hr style="border-top-color: red; border-top-width: 3px;">
-<h2 id="thats-all-folks" >Thats all folks!</h2>
-<p>Please remember, this is not normal markdown.  If you use all features of this flavor of markdown, then other platforms might give you some wonky results.  I will mostly be using this for generating fancy offline docs for scripts and libraries, and for generating GibHub Pages resources for my GitHub repos.</p></div></div></body></html>
+<h2 id="thats-all-folks" >Thats all folks!<a href="#thats-all-folks"><span class="link">•</span></a></h2>
+<p>Please remember, this is not normal markdown.  If you use all features of this flavor of markdown, then other platforms might give you some wonky results.  I will mostly be using this for generating fancy offline docs for scripts and libraries, and for generating GibHub Pages resources for my GitHub repos.</p>
+<h2 id="to-do-list:" >To-Do List:<a href="#to-do-list:"><span class="link">•</span></a></h2>
+<ul>
+<li>Add lots of :emojis: !</li></ul>
+</div></div></body></html>

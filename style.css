@@ -1,4 +1,4 @@
-:root{
+﻿:root{
     --link: #00ACAF;
     --link-hover: cyan;
     --link-special: orange;
@@ -105,7 +105,8 @@ body {
     color: cyan;
 }
 
-:target { color: var(--so4); }
+:target a:visited { color: var(--so4); }
+:target a:visited:hover, :target a:visited:hover .link { color: var(--link-hover); }
 :target.underline { border-color: var(--so4); }
 
 img { opacity: 0.5; }
@@ -121,6 +122,19 @@ a:visited { color: var(--link); }
 
 h1, h2, h3, h4, h5, h6
 { font-weight:bold; color:var(--header); margin-top: 24px; margin-bottom: [_font_size_]px; }
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a,
+h1:hover a, h2:hover a, h3:hover a, h4:hover a, h5:hover a, h6:hover a
+{ text-decoration: none; }
+
+h1 a .link, h2 a .link, h3 a .link, h4 a .link, h5 a .link, h6 a .link
+{ position: relative; float: left; margin-left: -20px; display: none; }
+
+h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover
+{ border-color: var(--link-hover); color: var(--link-hover); }
+
+h1:hover a .link, h2:hover a .link, h3:hover a .link, h4:hover a .link, h5:hover a .link, h6:hover a .link
+{ display: inline; }
 
 .underline { border-bottom: 1px solid #00ACAF; }
 h1.underline { padding-bottom: 10px; }

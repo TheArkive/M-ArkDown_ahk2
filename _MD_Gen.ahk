@@ -44,18 +44,17 @@ Run dir "\" file_title ".html" ; open and test
 ; ================================================
 
 make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
-    Static q := Chr(34)
-    
+
     If !RegExMatch(_in_text,"[`r`n]+$") && (final) ; add trailing CRLF if doesn't exist
         _in_text .= "`r`n"
     
     html1 := "<html><head><style>`r`n"
     html2 := "`r`n</style></head>`r`n`r`n<body>"
-    toc_html1 := "<div id=" q "toc-container" q ">"
-               . "<div id=" q "toc-icon" q " align=" q "right" q ">&#9776;</div>"
-               . "<div id=" q "toc-contents" q ">"
+    toc_html1 := '<div id="toc-container">'
+               . '<div id="toc-icon" align="right">&#9776;</div>'
+               . '<div id="toc-contents">'
     toc_html2 := "</div></div>" ; end toc-container and toc-contents
-    html3 := "<div id=" q "body-container" q "><div id=" q "main" q ">`r`n" ; <div id=" q "body-container" q ">
+    html3 := '<div id="body-container"><div id="main">`r`n' ; <div id=" q "body-container" q ">
     html4 := "</div></div></body></html>" ; </div>
     
     body := ""
@@ -99,10 +98,10 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 _class := "underline"
             
             id := RegExReplace(RegExReplace(StrLower(title),"[\[\]\{\}\(\)\@\!]",""),"[ \.]","-")
-            opener := "<h" match.Len(1) (id?" id=" q id q " ":"") (_class?" class=" q _class q:"") ">"
+            opener := "<h" match.Len(1) (id?' id="' id '" ':'') (_class?' class="' _class '"':'') '>'
                     
             body .= (body?"`r`n":"") opener title
-                  . "<a href=" q "#" id q "><span class=" q "link" q ">•</span></a>"
+                  . '<a href="#' id '"><span class="link">•</span></a>'
                   . "</h" match.Len(1) ">"
             
             toc.Push([StrLen(depth), title, id])
@@ -119,7 +118,7 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 i++, line := a[i]
             }
             
-            body .= (body?"`r`n":"") "<p><details><summary class=" q "spoiler" q ">"
+            body .= (body?"`r`n":"") '<p><details><summary class="spoiler">'
                   . disp_text "</summary>" make_html(spoiler_text,,github,false,"spoiler") "</details></p>"
             Continue
         }
@@ -144,7 +143,7 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                         hr_style .= (hr_style?" ":"") "border-top-color: " style ";"
                 }
             }
-            body .= (body?"`r`n":"") "<hr style=" q hr_style q ">"
+            body .= (body?"`r`n":"") '<hr style="' hr_style '">'
             Continue
         }
         
@@ -195,8 +194,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         If (table) {
             table_done := true
             
-            body .= (body?"`r`n":"") "<table class=" q "normal" q ">"
-            b := []
+            body .= (body?"`r`n":"") '<table class="normal">'
+            b := [], h := [], t := " `t"
             
             Loop Parse table, "`n", "`r"
             {
@@ -204,33 +203,38 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 c := StrSplit(A_LoopField,"|"), c.RemoveAt(1), c.RemoveAt(c.Length)
                 
                 If (A_Index = 1) {
+                    align := ""
                     Loop c.Length {
-                        If RegExMatch(c[A_Index], "^[ \t]*:(.+?)(?<!\\):[ \t]*$", &match) {
-                            ; msgbox "center: " match[1]
-                            
-                            m := inline_code(match[1])
-                            body .= "<th align=" q "center" q ">" StrReplace(m,"\:",":") "</th>"
-                        } Else If RegExMatch(c[A_Index], "^([^:].+?)(?<!\\):$", &match) {
-                            m := inline_code(match[1])
-                            body .= "<th align=" q "right" q ">" StrReplace(m,"\:",":") "</th>"
+                        If RegExMatch(Trim(c[A_Index],t), "^:(.+?)(?<!\\):$", &match) {
+                            m := StrReplace(inline_code(match[1]),"\:",":")
+                            h.Push(["center",m])
+                        } Else If RegExMatch(Trim(c[A_Index],t), "^([^:].+?)(?<!\\):$", &match) {
+                            m := StrReplace(inline_code(match[1]),"\:",":")
+                            h.Push(["right",m])
+                        } Else If RegExMatch(Trim(c[A_Index],t), "^:(.+)", &match) {
+                            m := StrReplace(inline_code(match[1]),"\:",":")
+                            h.Push(["left",m])
                         } Else {
-                            m := inline_code(c[A_Index])
-                            body .= "<th align=" q "left" q ">" StrReplace(m,"\:",":") "</th>"
+                            m := StrReplace(inline_code(Trim(c[A_Index],t)),"\:",":")
+                            h.Push(["",m])
                         }
                     }
                 } Else If (A_Index = 2) {
                     Loop c.Length {
                         If RegExMatch(c[A_Index], "^:\-+:$", &match)
-                            b.Push("center")
+                            b.Push(align:="center")
                         Else If RegExMatch(c[A_Index], "^\-+:$", &match)
-                            b.Push("right")
+                            b.Push(align:="right")
                         Else
-                            b.Push("left")
+                            b.Push(align:="left")
+                        If (!h[A_Index][1])
+                            h[A_Index][1] := align
+                        body .= '<th align="' h[A_Index][1] '">' h[A_Index][2] '</th>'
                     }
                 } Else {
                     Loop c.Length {
                         m := inline_code(c[A_Index]) ; make_html(c[A_Index],, false, "table data")
-                        body .= "<td align=" q b[A_Index] q ">" Trim(m," `t") "</td>"
+                        body .= '<td align="' b[A_Index]  '">' Trim(m," `t") '</td>'
                     }
                 }
                 body .= "</tr>"
@@ -313,7 +317,7 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                     ol .= (ol?"</li>`r`n":"") "<li>" make_html(match[3],,github,false,"ol item")
                     
                     If (A_Index = 1)
-                        ol_type := "type=" q RegExReplace(match[2], "[\.\) ]","") q
+                        ol_type := 'type="' RegExReplace(match[2], "[\.\) ]","") '"'
                     
                     If match[4]
                         ol .= "<br>"
@@ -424,8 +428,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             toc_width := (w > toc_width) ? w : toc_width
             toc_height += options.font_size * 2
             
-            final_toc .= (final_toc?"`r`n":"") "<a href=" q "#" item[3] q ">"
-                       . "<div class=" q "toc-item" q ">" (depth?rpt(indent,depth):"")
+            final_toc .= (final_toc?"`r`n":"") '<a href="#' item[3] '">'
+                       . '<div class="toc-item">' (depth?rpt(indent,depth):"")
                        . "• " ltgt(item[2]) "</div></a>"
         }
         
@@ -446,8 +450,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             toc_width := (w > toc_width) ? w : toc_width
             toc_height += options.font_size * 2
             
-            nav_str .= (final_toc?"`r`n":"") "<a href=" q SubStr(txt, sep+1) q " target=" q "_blank" q " rel=" q "noopener noreferrer" q ">"
-                       . "<div class=" q "toc-item" q ">" title "</div></a>"
+            nav_str .= (final_toc?"`r`n":"") '<a href="' SubStr(txt, sep+1) '" target="_blank" rel="noopener noreferrer">'
+                       . '<div class="toc-item">' title '</div></a>'
         }
         
         (do_toc) ? nav_str .= "<hr>" : ""
@@ -490,15 +494,6 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             output := StrReplace(output, match[0], "<code>" ltgt(match[1]) "</code>",,,1)
         }
         
-        ; A_Clipboard := output
-        ; msgbox "check clipboard"
-        
-        ; blank out <code> tags to prevent parsing markdown within <code> tags
-        ; output2 := output
-        ; While RegExMatch(output2,"<code>.+?</code>",&match) {
-            
-        ; }
-        
         ; image
         r := 1
         While (s := RegExMatch(output, "!\x5B *([^\x5D]*) *\x5D\x28 *([^\x29]+) *\x29(\x28 *[^\x29]* *\x29)?", &match, r)) {
@@ -507,8 +502,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 Continue
             }
             dims := Trim(match[3],"()")
-            output := StrReplace(output, match[0], "<img src=" q match[2] q (dims?" " dims:"")
-                    . " alt=" q ltgt(match[1]) q " title=" q ltgt(match[1]) q ">",,,1)
+            output := StrReplace(output, match[0], '<img src="' match[2] '"' (dims?" " dims:"")
+                    . ' alt="' ltgt(match[1]) '" title="' ltgt(match[1]) '">',,,1)
         }
         
         ; link / url
@@ -518,7 +513,7 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 r := s + match.Len(0)
                 Continue
             }
-            output := StrReplace(output, match[0], "<a href=" q match[2] q " target=" q "_blank" q " rel=" q "noopener noreferrer" q ">"
+            output := StrReplace(output, match[0], '<a href="' match[2] '" target="_blank" rel="noopener noreferrer">'
                     . match[1] "</a>",,,1)
         }
         
@@ -560,14 +555,6 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             }
             output := StrReplace(output, match[0], "<del>" ltgt(match[1]) "</del>",,,1)
         }
-        
-        ; While (s := RegExMatch(output, "\\([^\s])", &match, r)) {
-            ; If IsInCode(match[0], output) || IsInTag(match[0], output) {
-                ; r := s + match.Len(0)
-                ; Continue
-            ; }
-            ; output := StrReplace(output, match[0], ..
-        ; }
         
         return output
     }

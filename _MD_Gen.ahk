@@ -21,11 +21,16 @@ options := {css:css
           , font_size:16
           , font_weight:400}
 
-html := make_html(md_txt, options, false) ; true/false = use some github elements
+html := make_html(md_txt, options, true) ; true/false = use some github elements
 
 FileAppend html, dir "\" file_title ".html", "UTF-8"
 
 Run dir "\" file_title ".html" ; open and test
+
+dbg(_in) { ; AHK v2
+    Loop Parse _in, "`n", "`r"
+        OutputDebug "AHK: " A_LoopField
+}
 
 ; ================================================
 ; make_html(_in_html, options_obj:="", github:=false)
@@ -44,9 +49,10 @@ Run dir "\" file_title ".html" ; open and test
 ; ================================================
 
 make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
-
-    If !RegExMatch(_in_text,"[`r`n]+$") && (final) ; add trailing CRLF if doesn't exist
+    
+    If !RegExMatch(_in_text,"[`r`n]+$") && (final) && md_type!="header" { ; add trailing CRLF if doesn't exist
         _in_text .= "`r`n"
+    }
     
     html1 := "<html><head><style>`r`n"
     html2 := "`r`n</style></head>`r`n`r`n<body>"
@@ -89,6 +95,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         
         ; header h1 - h6
         If RegExMatch(line, "^(#+) (.+)", &match) {
+            ; dbg("HEADER H1-H6")
+            
             depth := match[1], _class := "", title := ltgt(match[2])
             
             If RegExMatch(line, "\x5B *([\w ]+) *\x5D$", &_match)
@@ -100,7 +108,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             id := RegExReplace(RegExReplace(StrLower(title),"[\[\]\{\}\(\)\@\!]",""),"[ \.]","-")
             opener := "<h" match.Len(1) (id?' id="' id '" ':'') (_class?' class="' _class '"':'') '>'
                     
-            body .= (body?"`r`n":"") opener title
+            body .= (body?"`r`n":"") opener Trim(make_html(title,,github,false,"header"),"`r`n")
+            ; body .= (body?"`r`n":"") opener title
                   . '<a href="#' id '"><span class="link">•</span></a>'
                   . "</h" match.Len(1) ">"
             
@@ -124,8 +133,13 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         }
         
         ; hr
-        If RegExMatch(line, "^([=\-\*_]{3,}[=\-\*_]*)(?:\x5B *[^\x5D]* *\x5D)?$", &match) {
+        If RegExMatch(line, "^([=\-\*_ ]{3,}[=\-\*_ ]*)(?:\x5B *[^\x5D]* *\x5D)?$", &match) {
+            ; dbg("HR: " line)
+            
             hr_style := ""
+            
+            If Trim(line)=""
+                Continue
             
             If (github && SubStr(match[1],1,1) = "=")
                 Continue
@@ -149,6 +163,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         
         ; blockquote - must come earlier because of nested elements
         While RegExMatch(line, "^\> ?(.*)", &match) {
+            ; dbg("BLOCKQUOTE 1")
+            
             blockquote .= (blockquote?"`r`n":"") match[1]
             
             If a.Has(i+1)
@@ -157,13 +173,17 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 Break
         }
         
-        If (blockquote) { 
+        If (blockquote) {
+            ; dbg("BLOCKQUOTE 2")
+            
             body .= (body?"`r`n":"") "<blockquote>" make_html(blockquote,,github, false, "blockquote") "</blockquote>"
             Continue
         }
         
         ; code block
         If (line = "``````") {
+            ; dbg("CODEBLOCK")
+            
             If (i < a.Length)
                 i++, line := a[i]
             Else
@@ -183,6 +203,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         
         ; table
         While RegExMatch(line, "^\|.*?\|$") {
+            ; dbg("TABLE 1")
+            
             table .= (table?"`r`n":"") line
             
             If a.Has(i+1)
@@ -192,6 +214,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         }
         
         If (table) {
+            ; dbg("TABLE 2")
+            
             table_done := true
             
             body .= (body?"`r`n":"") '<table class="normal">'
@@ -245,6 +269,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         
         ; unordered lists
         If RegExMatch(line, "^( *)[\*\+\-] (.+?)(\\?)$", &match) {
+            
+            ; dbg("UNORDERED LISTS")
             
             While RegExMatch(line, "^( *)([\*\+\-] )?(.+?)(\\?)$", &match) { ; previous IF ensures first iteration is a list item
                 ul2 := ""
@@ -308,7 +334,9 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         }
         
         ; ordered lists
-        If RegExMatch(line, "^( *)[\dA-Za-z]+(?:\.|\x29) ?(.+?)(\\?)$", &match) {
+        If RegExMatch(line, "^( *)[\dA-Za-z]+(?:\.|\x29) +(.+?)(\\?)$", &match) {
+            
+            ; dbg("ORDERED LISTS")
             
             While RegExMatch(line, "^( *)([\dA-Za-z]+(?:\.|\x29) )?(.+?)(\\?)$", &match) { ; previous IF ensures first iteration is a list item
                 ol2 := ""
@@ -402,11 +430,10 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             Else
                 body .= "</p>"
         } Else If line {
-            ; A_Clipboard := body
-            ; msgbox line
-            body .= (body?"`r`n":"") "<p>" inline_code(line) "</p>"
-            ; A_Clipboard := body
-            ; msgbox "check clipboard 2"
+            If md_type != "header"
+                body .= (body?"`r`n":"") "<p>" inline_code(line) "</p>"
+            Else
+                body .= (body?"`r`n":"") inline_code(line)
         }
     }
     
@@ -595,9 +622,4 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         Else
             return false
     }
-}
-
-dbg(_in) { ; AHK v2
-    Loop Parse _in, "`n", "`r"
-        OutputDebug "AHK: " A_LoopField
 }

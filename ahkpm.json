@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "description": "A special flavor of markdown for generating docs or GitHub Pages",
+  "repository": "https://github.com/TheArkive/M-ArkDown_ahk2",
+  "website": "https://thearkive.github.io/M-ArkDown_ahk2/",
+  "license": "MIT",
+  "issueTracker": "https://github.com/TheArkive/M-ArkDown_ahk2/issues",
+  "include": "_MD_Gen.ahk",
+  "author": {
+    "name": "TheArkive",
+    "email": "",
+    "website": ""
+  },
+  "scripts": {},
+  "dependencies": {}
+}

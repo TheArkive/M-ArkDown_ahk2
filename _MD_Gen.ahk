@@ -1,9 +1,9 @@
-; ================================================
+﻿; ================================================
 ; Example Script - this just asks for a file and
 ; uses make_html() to convert the M-ArkDown into html.
 ; ================================================
 
-file_path := FileSelect("1",,"Select markdown file:","Markdown (*.md)")
+file_path := FileSelect("1",A_ScriptDir,"Select markdown file:","Markdown (*.md)")
 If !file_path
     ExitApp
 
@@ -19,7 +19,8 @@ css := FileRead("style.css")
 options := {css:css
           , font_name:"Segoe UI"
           , font_size:16
-          , font_weight:400}
+          , font_weight:400
+          , line_height:"1.6"} ; 1.6em - put decimals in "" for easier accuracy/handling.
 
 html := make_html(md_txt, options, true) ; true/false = use some github elements
 
@@ -57,7 +58,7 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     html1 := "<html><head><style>`r`n"
     html2 := "`r`n</style></head>`r`n`r`n<body>"
     toc_html1 := '<div id="toc-container">'
-               . '<div id="toc-icon" align="right">&#9776;</div>'
+               . '<div id="toc-icon" align="right">&#9776;</div>' ; hamburger (3 horizontal lines) icon
                . '<div id="toc-contents">'
     toc_html2 := "</div></div>" ; end toc-container and toc-contents
     html3 := '<div id="body-container"><div id="main">`r`n' ; <div id=" q "body-container" q ">
@@ -66,8 +67,9 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     body := ""
     toc := [], do_toc := false
     do_nav := false, nav_arr := []
-    
-    table_done := false
+    ref := Map() ; for future use
+    link_ico := "•" ; 🔗 •
+    Static chk_id := 0 ; increments throughout entire document
     
     If (final)
         css := options.css
@@ -75,11 +77,11 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     a := StrSplit(_in_text,"`n","`r")
     i := 0
     
-    While (i < a.Length) {                                          ; ( ) \x28 \x29
-        i++, line := a[i]                                           ; [ ] \x5B \x5D
-        blockquote := "", ul := "", ul2 := "", code_block := ""     ; { } \x7B \x7D
+    While (i < a.Length) { ; ( ) \x28 \x29 ; [ ] \x5B \x5D ; { } \x7B \x7D
+        
+        i++, line := strip_comment(a[i])
+        ul := "", ul2 := ""
         ol := "", ol2 := "", ol_type := ""
-        table := ""
         
         If final && RegExMatch(line, "^<nav\|") && a.Has(i+1) && (a[i+1] = "") {
             do_nav := True
@@ -93,38 +95,85 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             Continue
         }
         
+        code_block := "" ; code block
+        If (line = "``````") || (line = "````````") {
+            ; dbg("CODEBLOCK")
+            
+            match := line
+            If !line_inc()
+                Break
+            
+            While (line != match) {
+                code_block .= (code_block?"`r`n":"") line
+                If !line_inc()
+                    Break
+            }
+            
+            body .= (body?"`r`n":"") "<pre><code>" convert(code_block) "</code></pre>"
+            Continue
+        }
+        
         ; header h1 - h6
-        If RegExMatch(line, "^(#+) (.+)", &match) {
+        If RegExMatch(line, "^(#+) (.+?)(?:\x5B[ \t]*(\w+)[ \t]*\x5D)?$", &n) {
             ; dbg("HEADER H1-H6")
             
-            depth := match[1], _class := "", title := ltgt(match[2])
-            
-            If RegExMatch(line, "\x5B *([\w ]+) *\x5D$", &_match)
-                _class := _match[1], title := SubStr(title, 1, StrLen(match[2]) - _match.Len(0))
-            
-            If (github && (match.Len(1) = 1 || match.Len(1) = 2))
-                _class := "underline"
+            depth := StrLen(n[1]), title := inline_code(Trim(n[2]," `t"))
+            _class := (depth <= 2 || n[3]="underline") ? "underline" : ""
             
             id := RegExReplace(RegExReplace(StrLower(title),"[\[\]\{\}\(\)\@\!]",""),"[ \.]","-")
-            opener := "<h" match.Len(1) (id?' id="' id '" ':'') (_class?' class="' _class '"':'') '>'
-                    
-            body .= (body?"`r`n":"") opener Trim(make_html(title,,github,false,"header"),"`r`n")
-            ; body .= (body?"`r`n":"") opener title
-                  . '<a href="#' id '"><span class="link">•</span></a>'
-                  . "</h" match.Len(1) ">"
+            opener := "<h" depth (id?' id="' id '" ':'') (_class?' class="' _class '"':'') '>'
             
-            toc.Push([StrLen(depth), title, id])
+            body .= (body?"`r`n":"") opener title
+                  . '<a href="#' id '"><span class="link">' link_ico '</span></a>'
+                  . '</h' depth '>'
+            
+            toc.Push([depth, title, id])
+            Continue
+        }
+        
+        ; alt header h1 and h2
+        ; ------ or ======= as underline in next_line
+        next_line := a.Has(i+1) ? strip_comment(a[i+1]) : ""
+        If next_line && line && RegExMatch(next_line,"^(\-+|=+)$") {
+            depth := (SubStr(next_line,1,1) = "=") ? 1 : 2
+            
+            id := RegExReplace(RegExReplace(StrLower(line),"[\[\]\{\}\(\)\@\!<>\|]",""),"[ \.]","-")
+            opener := "<h" depth ' id="' id '" class="underline">'
+                    
+            body .= (body?"`r`n":"") opener inline_code(line)
+                  . '<a href="#' id '"><span class="link">' link_ico '</span></a>'
+                  . '</h' depth '>'
+            
+            toc.Push([depth, line, id]), i++ ; increase line count to skip the ---- or ==== form next_line
+            Continue
+        }
+        
+        ; check list
+        If RegExMatch(line,"^\- \x5B([ xX])\x5D (.+)",&n) {
+            body .= (body?"`r`n":"") '<ul class="checklist">'
+            While RegExMatch(line,"^\- \x5B([ xX])\x5D (.+)",&n) {
+                chk := (n[1]="x") ? 'checked=""' : ''
+                body .= '`r`n<li><input type="checkbox" id="check' chk_id '" disabled="" ' chk '>'
+                               . '<label for="check' chk_id '">  ' n[2] '</label></li>'
+                chk_id++
+                If !line_inc()
+                    Break
+            }
+            body .= '</ul>'
             Continue
         }
         
         ; spoiler
+        spoiler_text := ""
         If RegExMatch(line, "^<spoiler=([^>]+)>$", &match) {
-            disp_text := ltgt(match[1])
-            spoiler_text := ""
-            i++, line := a[i]
+            disp_text := match[1]
+            If !line_inc()
+                Break
+            
             While !RegExMatch(line, "^</spoiler>$") {
                 spoiler_text .= (spoiler_text?"`r`n":"") line
-                i++, line := a[i]
+                If !line_inc()
+                    throw Error("No closing </spoiler> tag found.",-1)
             }
             
             body .= (body?"`r`n":"") '<p><details><summary class="spoiler">'
@@ -133,45 +182,42 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         }
         
         ; hr
-        If RegExMatch(line, "^([=\-\*_ ]{3,}[=\-\*_ ]*)(?:\x5B *[^\x5D]* *\x5D)?$", &match) {
+        if RegExMatch(line, "^(\-{3,}|_{3,}|\*{3,}|={3,})(?:\x5B[ \t]*([^\x5D]+)*[ \t]*\x5D)?$", &match) {
+        
             ; dbg("HR: " line)
             
             hr_style := ""
             
-            If Trim(line)=""
-                Continue
-            
-            If (github && SubStr(match[1],1,1) = "=")
-                Continue
-            
-            If RegExMatch(line, "\x5B *([^\x5D]*) *\x5D", &match) {
-                hr_str := match[1]
-                arr := StrSplit(hr_str," ")
-                
-                For i, style in arr {
+            If match[2] {
+                For i, style in StrSplit(match[2]," ","`t") {
                     If (SubStr(style, -2) = "px")
                         hr_style .= (hr_style?" ":"") "border-top-width: " style ";"
                     Else If RegExMatch(style, "(dotted|dashed|solid|double|groove|ridge|inset|outset|none|hidden)")
                         hr_style .= (hr_style?" ":"") "border-top-style: " style ";"
+                    Else If InStr(style,"opacity")=1
+                        hr_style .= (hr_style?" ":"") style ";"
                     Else
                         hr_style .= (hr_style?" ":"") "border-top-color: " style ";"
                 }
+                
+            } Else {
+                hr_style := "border-top-style: solid; border-top-width: 4px; opacity: 0.25;"
             }
+            
             body .= (body?"`r`n":"") '<hr style="' hr_style '">'
             Continue
         }
         
-        ; blockquote - must come earlier because of nested elements
-        While RegExMatch(line, "^\> ?(.*)", &match) {
+        blockquote := "" ; blockquote
+        While RegExMatch(line, "^\> *(.*)", &match) {
             ; dbg("BLOCKQUOTE 1")
             
             blockquote .= (blockquote?"`r`n":"") match[1]
             
-            If a.Has(i+1)
-                i++, line := Trim(a[i]," `t")
-            Else
+            If !line_inc()
                 Break
         }
+        
         
         If (blockquote) {
             ; dbg("BLOCKQUOTE 2")
@@ -180,46 +226,21 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             Continue
         }
         
-        ; code block
-        If (line = "``````") {
-            ; dbg("CODEBLOCK")
-            
-            If (i < a.Length)
-                i++, line := a[i]
-            Else
-                Break
-            
-            While (line != "``````") {
-                code_block .= (code_block?"`r`n":"") line
-                If (i < a.Length)
-                    i++, line := a[i]
-                Else
-                    Break
-            }
-            
-            body .= (body?"`r`n":"") "<pre><code>" StrReplace(StrReplace(code_block,"<","&lt;"),">","&gt;") "</code></pre>"
-            Continue
-        }
-        
-        ; table
+        table := "" ; table
         While RegExMatch(line, "^\|.*?\|$") {
             ; dbg("TABLE 1")
             
             table .= (table?"`r`n":"") line
             
-            If a.Has(i+1)
-                i++, line := a[i]
-            Else
+            If !line_inc()
                 Break
         }
         
         If (table) {
             ; dbg("TABLE 2")
             
-            table_done := true
-            
             body .= (body?"`r`n":"") '<table class="normal">'
-            b := [], h := [], t := " `t"
+            b := [], h := []
             
             Loop Parse table, "`n", "`r"
             {
@@ -227,39 +248,28 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 c := StrSplit(A_LoopField,"|"), c.RemoveAt(1), c.RemoveAt(c.Length)
                 
                 If (A_Index = 1) {
-                    align := ""
-                    Loop c.Length {
-                        If RegExMatch(Trim(c[A_Index],t), "^:(.+?)(?<!\\):$", &match) {
-                            m := StrReplace(inline_code(match[1]),"\:",":")
-                            h.Push(["center",m])
-                        } Else If RegExMatch(Trim(c[A_Index],t), "^([^:].+?)(?<!\\):$", &match) {
-                            m := StrReplace(inline_code(match[1]),"\:",":")
-                            h.Push(["right",m])
-                        } Else If RegExMatch(Trim(c[A_Index],t), "^:(.+)", &match) {
-                            m := StrReplace(inline_code(match[1]),"\:",":")
-                            h.Push(["left",m])
-                        } Else {
-                            m := StrReplace(inline_code(Trim(c[A_Index],t)),"\:",":")
-                            h.Push(["",m])
-                        }
+                    For i, t in c { ; table headers
+                        txt := inline_code(Trim(t," `t")) ; , align := "center"
+                        If RegExMatch(txt,"^(:)?(.+?)(:)?$",&m) {
+                            align := (m[1]&&m[3]) ? "center" : (m[3]) ? "right" : "left"
+                            txt := m[2], h.Push([align,txt])
+                        } Else
+                            h.Push(["",txt])
                     }
+                    
                 } Else If (A_Index = 2) {
-                    Loop c.Length {
-                        If RegExMatch(c[A_Index], "^:\-+:$", &match)
-                            b.Push(align:="center")
-                        Else If RegExMatch(c[A_Index], "^\-+:$", &match)
-                            b.Push(align:="right")
-                        Else
-                            b.Push(align:="left")
-                        If (!h[A_Index][1])
-                            h[A_Index][1] := align
-                        body .= '<th align="' h[A_Index][1] '">' h[A_Index][2] '</th>'
+                    For i, t in c {
+                        align := "left"
+                        If RegExMatch(t,"^(:)?\-+(:)?$",&m)
+                            align := (m[1]&&m[2]) ? "center" : (m[2]) ? "right" : "left"
+                        b.Push(align)
+                        body .= '<th align="' (h[i][1]?h[i][1]:align) '">' h[i][2] '</th>'
                     }
+                    
                 } Else {
-                    Loop c.Length {
-                        m := inline_code(c[A_Index]) ; make_html(c[A_Index],, false, "table data")
-                        body .= '<td align="' b[A_Index]  '">' Trim(m," `t") '</td>'
-                    }
+                    For i, t in c
+                        body .= '<td align="' b[i]  '">' Trim(inline_code(t)," `t") '</td>'
+                    
                 }
                 body .= "</tr>"
             }
@@ -268,62 +278,52 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         }
         
         ; unordered lists
-        If RegExMatch(line, "^( *)[\*\+\-] (.+?)(\\?)$", &match) {
+        If RegExMatch(line, "^( *)[\*\+\-] (.+?)(\\?)$", &n) {
             
             ; dbg("UNORDERED LISTS")
             
-            While RegExMatch(line, "^( *)([\*\+\-] )?(.+?)(\\?)$", &match) { ; previous IF ensures first iteration is a list item
+            While RegExMatch(line, "^( *)([\*\+\-] )?(.+?)(\\?)$", &n) { ; previous IF ensures first iteration is a list item
                 ul2 := ""
                 
-                If !match[1] && match[2] && match[3] {
-                    ul .= (ul?"</li>`r`n":"") "<li>" make_html(match[3],,github,false,"ul item")
+                If !n[1] && n[2] && n[3] {
+                    ul .= (ul?"</li>`r`n":"") "<li>" make_html(n[3],,github,false,"ul item")
                     
-                    If match[4]
+                    If n[4]
                         ul .= "<br>"
                     
-                    If (i < a.Length)
-                        i++, line := a[i]
-                    Else
+                    If !line_inc()
                         Break
                     
                     Continue
 
-                } Else If !match[2] && match[3] {
-                    ul .= make_html(match[3],,github,false,"ul item append")
+                } Else If !n[2] && n[3] {
+                    ul .= make_html(n[3],,github,false,"ul item append")
                     
-                    If match[4]
+                    If n[4]
                         ul .= "<br>"
                     
-                    If (i < a.Length)
-                        i++, line := a[i]
-                    Else
+                    If !line_inc()
                         Break
                     
                     Continue
                 
-                } Else If match[1] && match[3] {
+                } Else If n[1] && n[3] {
                     
-                    While RegExMatch(line, "^( *)([\*\+\-] )?(.+?)(\\?)$", &match) {
-                        If (Mod(StrLen(match[1]),2) || !match[1] || !match[3])
+                    While RegExMatch(line, "^( *)([\*\+\-] )?(.+?)(\\?)$", &n) {
+                        If (Mod(StrLen(n[1]),2) || !n[1] || !n[3])
                             Break
                         
                         ul2 .= (ul2?"`r`n":"") SubStr(line, 3)
                         
-                        If (i < a.Length)
-                            i++, line := a[i]
-                        Else {
-                            line := ""
+                        If !line_inc()
                             Break
-                        }
                     }
                     
                     ul .= "`r`n" make_html(ul2,,github,false,"ul")
                     Continue
                 }
                 
-                If (i < a.Length)
-                    i++, line := a[i]
-                Else
+                If !line_inc()
                     Break
             }
         }
@@ -345,14 +345,12 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                     ol .= (ol?"</li>`r`n":"") "<li>" make_html(match[3],,github,false,"ol item")
                     
                     If (A_Index = 1)
-                        ol_type := 'type="' RegExReplace(match[2], "[\.\) ]","") '"'
+                        ol_type := 'type="' RegExReplace(match[2], '[\.\) ]','') '"'
                     
                     If match[4]
                         ol .= "<br>"
                     
-                    If (i < a.Length)
-                        i++, line := a[i]
-                    Else
+                    If !line_inc()
                         Break
                     
                     Continue
@@ -363,9 +361,7 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                     If match[4]
                         ol .= "<br>"
                     
-                    If (i < a.Length)
-                        i++, line := a[i]
-                    Else
+                    If !line_inc()
                         Break
                     
                     Continue
@@ -378,21 +374,15 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                         
                         ol2 .= (ol2?"`r`n":"") SubStr(line, 3)
                         
-                        If (i < a.Length)
-                            i++, line := a[i]
-                        Else {
-                            line := ""
+                        If !line_inc()
                             Break
-                        }
                     }
                     
                     ol .= "`r`n" make_html(ol2,,github,false,"ol")
                     Continue
                 }
                 
-                If (i < a.Length)
-                    i++, line := a[i]
-                Else
+                If !line_inc()
                     Break
             }
         }
@@ -415,20 +405,15 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             body .= (body?"`r`n":"") "<p>"
             reps := 0
             
-            While RegExMatch(line, "(.+)\\$", &match) {
+            While RegExMatch(line, "(.+)?\\$", &match) {
                 reps++
                 body .= ((A_Index>1)?"<br>":"") inline_code(match[1])
                 
-                If (i < a.Length)
-                    i++, line := a[i]
-                Else
+                If !line_inc()
                     Break
             }
             
-            If line
-                body .= (reps?"<br>":"") inline_code(line) "</p>"
-            Else
-                body .= "</p>"
+            body .= line ? ((reps?"<br>":"") inline_code(line) "</p>") : "</p>"
         } Else If line {
             If md_type != "header"
                 body .= (body?"`r`n":"") "<p>" inline_code(line) "</p>"
@@ -457,7 +442,7 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             
             final_toc .= (final_toc?"`r`n":"") '<a href="#' item[3] '">'
                        . '<div class="toc-item">' (depth?rpt(indent,depth):"")
-                       . "• " ltgt(item[2]) "</div></a>"
+                       . "• " item[2] "</div></a>"
         }
         
         temp.Destroy()
@@ -492,13 +477,14 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     
     If final {
         If (do_nav && do_toc)
-            toc_height += Round(options.font_size * 1.6) ; multiply by body line-height
+            toc_height += Round(options.font_size * Float(options.line_height)) ; multiply by body line-height
         
         css := StrReplace(css, "[_toc_width_]",toc_width + 25) ; account for scrollbar width
-        css := StrReplace(css, "[_toc_height_]",toc_height)
+        css := StrReplace(css, "[_toc_height_]",Round(toc_height))
         css := StrReplace(css, "[_font_name_]", options.font_name)
         css := StrReplace(css, "[_font_size_]", options.font_size)
         css := StrReplace(css, "[_font_weight_]", options.font_weight)
+        css := StrReplace(css, "[_line_height_]", Round(options.line_height,1))
         
         If (do_toc || do_nav)
             result := html1 . css . html2 . user_menu . html3 . body . html4
@@ -514,112 +500,116 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     ; =======================================================================
     
     inline_code(_in) {
-        output := _in
+        output := _in, check := ""
         
-        ; inline code
-        While RegExMatch(output, "``(.+?)``", &match) {
-            output := StrReplace(output, match[0], "<code>" ltgt(match[1]) "</code>",,,1)
-        }
-        
-        ; image
-        r := 1
-        While (s := RegExMatch(output, "!\x5B *([^\x5D]*) *\x5D\x28 *([^\x29]+) *\x29(\x28 *[^\x29]* *\x29)?", &match, r)) {
-            If IsInCode(match[0], output) || IsInTag(match[0], output) {
-                r := s + match.Len(0)
-                Continue
+        While (check != output) { ; repeat until no changes are made
+            check := output
+            
+            ; inline code
+            While RegExMatch(output, "``(.+?)``", &x) {
+                
+                If RegExMatch(x[1],"^\#[\da-fA-F]{6,6}$")
+                || RegExMatch(x[1],"^rgb\(\d{1,3}, *\d{1,3}, *\d{1,3}\)$")
+                || RegExMatch(x[1],"^hsl\(\d{1,3}, *\d{1,3}%, *\d{1,3}%\)$") {
+                    output := '<code>' x[1] ' <span class="circle" style="background-color: ' x[1] ';'
+                                                                      . ' width: ' (options.font_size//2) 'px;'
+                                                                      . ' height: ' (options.font_size//2) 'px;'
+                                                                      . ' display: inline-block;'
+                                                                      . ' border: 2px solid ' x[1] ';'
+                                                                      . ' border-radius: 50%;"></span></code>'
+                } Else If !IsInCode()
+                    output := StrReplace(output, x[0], "<code>" convert(x[1]) "</code>",,,1)
             }
-            dims := Trim(match[3],"()")
-            output := StrReplace(output, match[0], '<img src="' match[2] '"' (dims?" " dims:"")
-                    . ' alt="' ltgt(match[1]) '" title="' ltgt(match[1]) '">',,,1)
-        }
-        
-        ; link / url
-        r := 1
-        While (s := RegExMatch(output, "\x5B *([^\x5D]+) *\x5D\x28 *([^\x29]+) *\x29", &match, r)) {
-            If IsInCode(match[0], output) || IsInTag(match[0], output) {
-                r := s + match.Len(0)
-                Continue
+            
+            ; escape characters
+            While RegExMatch(output,"(\\)(.)",&x)
+                output := StrReplace(output,x[0],"&#" Ord(x[2]) ";")
+            
+            ; image
+            While RegExMatch(output, "!\x5B *([^\x5D]*) *\x5D\x28 *([^\x29]+) *\x29(\x28 *[^\x29]* *\x29)?", &x) && !IsInCode() {
+                dims := (dm:=Trim(x[3],"()")) ? " " dm : ""
+                output := StrReplace(output, x[0], '<img src="' x[2] '"' dims ' alt="' x[1] '" title="' x[1] '">',,,1)
             }
-            output := StrReplace(output, match[0], '<a href="' match[2] '" target="_blank" rel="noopener noreferrer">'
-                    . match[1] "</a>",,,1)
-        }
-        
-        ; strong + emphesis (bold + italics)
-        While (s := RegExMatch(output, "(?<!\w)[\*]{3,3}([^\*]+)[\*]{3,3}", &match, r))
-           || (s := RegExMatch(output, "(?<!\w)[\_]{3,3}([^\_]+)[\_]{3,3}", &match, r)) {
-            If IsInCode(match[0], output) || IsInTag(match[0], output) {
-                r := s + match.Len(0)
-                Continue
+            
+            ; link / url
+            While RegExMatch(output, "\x5B *([^\x5D]+) *\x5D\x28 *([^\x29]+) *\x29", &x) && !IsInCode()
+                output := StrReplace(output, x[0], '<a href="' x[2] '" target="_blank" rel="noopener noreferrer">' x[1] "</a>",,,1)
+            
+            ; strong + emphasis (bold + italics)
+            While (RegExMatch(output, "(?<![\*\w])[\*]{3,3}([^\*]+)[\*]{3,3}", &x)
+               ||  RegExMatch(output, "(?<!\w)[\_]{3,3}([^\_]+)[\_]{3,3}", &x)) && !IsInCode() {
+                output := StrReplace(output, x[0], "<em><strong>" x[1] "</strong></em>",,,1)
             }
-            output := StrReplace(output, match[0], "<em><strong>" ltgt(match[1]) "</strong></em>",,,1)
-        }
-        
-        ; strong (bold)
-        While (s := RegExMatch(output, "(?<!\w)[\*]{2,2}([^\*]+)[\*]{2,2}", &match, r))
-           || (s := RegExMatch(output, "(?<!\w)[\_]{2,2}([^\_]+)[\_]{2,2}", &match, r)) {
-            If IsInCode(match[0], output) || IsInTag(match[0], output) {
-                r := s + match.Len(0)
-                Continue
+            
+            ; strong (bold)
+            While (RegExMatch(output, "(?<![\*\w])[\*]{2,2}([^\*]+)[\*]{2,2}", &x)
+               ||  RegExMatch(output, "(?<!\w)[\_]{2,2}([^\_]+)[\_]{2,2}", &x)) && !IsInCode() {
+                output := StrReplace(output, x[0], "<strong>" x[1] "</strong>",,,1)
             }
-            output := StrReplace(output, match[0], "<strong>" ltgt(match[1]) "</strong>",,,1)
-        }
-        
-        ; emphesis (italics)
-        While (s := RegExMatch(output, "(?<!\w)[\*]{1,1}([^\*]+)[\*]{1,1}", &match, r))
-           || (s := RegExMatch(output, "(?<!\w)[\_]{1,1}([^\_]+)[\_]{1,1}", &match, r)) {
-            If IsInCode(match[0], output) || IsInTag(match[0], output) {
-                r := s + match.Len(0)
-                Continue
+            
+            ; emphasis (italics)
+            While (RegExMatch(output, "(?<![\*\w])[\*]{1,1}([^\*]+)[\*]{1,1}", &x)
+               ||  RegExMatch(output, "(?<![\w])[\_]{1,1}([^\_]+)[\_]{1,1}", &x)) && !IsInCode() {
+                output := StrReplace(output, x[0], "<em>" x[1] "</em>",,,1)
             }
-            output := StrReplace(output, match[0], "<em>" ltgt(match[1]) "</em>",,,1)
-        }
-        
-        ; strikethrough
-        While (s := RegExMatch(output, "(?<!\w)~{2,2}([^~]+)~{2,2}", &match, r)) {
-            If IsInCode(match[0], output) || IsInTag(match[0], output) {
-                r := s + match.Len(0)
-                Continue
-            }
-            output := StrReplace(output, match[0], "<del>" ltgt(match[1]) "</del>",,,1)
+            
+            ; strikethrough
+            While RegExMatch(output, "(?<!\w)~{2,2}([^~]+)~{2,2}", &x) && !IsInCode()
+                output := StrReplace(output, x[0], "<del>" x[1] "</del>",,,1)
         }
         
         return output
+        
+        IsInCode() => ((st := x.Pos[0]-6) < 1) ? false : RegExMatch(output,"<code> *\Q" x[0] "\E",,st) ? true : false
     }
     
-    ltgt(_in) {
-        return StrReplace(StrReplace(_in,"<","&lt;"),">","&gt;")
+    line_inc(esc:=false) {
+        (i < a.Length) ? (line := strip_comment(a[++i]), result:=true) : (line := "", result:=false) ; use <= ???
+        esc ? escape_txt(line) : ""
+        return result
     }
     
-    rpt(_in, reps) {
-        final_str := ""         ; Had to change "final" var to "final_str".
-        Loop reps               ; This may still be a bug in a133...
-            final_str .= _in
-        return final_str
+    strip_comment(_in_) => RTrim(RegExReplace(_in_,"^(.+)<\!\-\-[^>]+\-\->","$1")," `t")
+    
+    convert(_in_) { ; convert markup chars so they don't get recognized
+        output := _in_
+        For i, v in ["&","<",">","\","*","_","-","=","~","``","[","]","(",")","!","{","}"]
+            output := StrReplace(output,v,"&#" Ord(v) ";")
+        return output
     }
     
-    IsInTag(needle, haystack) {
-        start := InStr(haystack, needle) + StrLen(needle)
-        sub_str := SubStr(haystack, start)
-        
-        tag_start := InStr(sub_str,"<")
-        tag_end := InStr(sub_str,">")
-        
-        If (!tag_start && tag_end) Or (tag_end < tag_start)
-            return true
-        Else
-            return false
+    rpt(x,y) => StrReplace(Format("{:-" y "}","")," ",x) ; string repeat ... x=str, y=iterations
+    
+    escape_txt(_in_) { ; not yet used ...
+        output := _in_
+        While r := RegExMatch(output,"\\(.)",&_m)
+            output := StrReplace(output,_m[0],"&#" Ord(_m[1]) ";")
+        return output
     }
     
-    IsInCode(needle, haystack) {
-        start := InStr(haystack, needle) + StrLen(needle)
-        sub_str := SubStr(haystack, start)
+    ; IsInTag(tag, haystack) { ; no longer used ...
+        ; start := InStr(haystack, tag) + StrLen(tag)
+        ; sub_str := SubStr(haystack, start)
         
-        code_start := InStr(sub_str,"<code>")
-        code_end := InStr(sub_str,"</code>")
+        ; tag_start := InStr(sub_str,"<")
+        ; tag_end := InStr(sub_str,">")
         
-        If (!code_start && code_end) Or (code_end < code_start)
-            return true
-        Else
-            return false
-    }
+        ; return ((!tag_start && tag_end) || (tag_end < tag_start)) ? true : false
+    ; }
+    
+    ; IsInCode(needle, haystack) { ; no longer used ...
+        ; start := InStr(haystack, needle) + StrLen(needle)
+        ; sub_str := SubStr(haystack, start)
+        
+        ; code_start := InStr(sub_str,"<code>")
+        ; code_end := InStr(sub_str,"</code>")
+        
+        ; return ((!code_start && code_end) || (code_end < code_start)) ? true : false
+    ; }
+    
+    ; ContainsTag(haystack) { ; no longer used ...
+        ; If !(RegExMatch(haystack,"<([^>]+)>[^<]+</([^>]+)>",&_m))
+            ; return false
+        ; return (_m[1]=_m[2]) ? true : false
+    ; }
 }

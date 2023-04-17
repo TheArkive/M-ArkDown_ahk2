@@ -30,7 +30,7 @@ html, body {
 
 body {
     color: var(--text);
-    line-height: 1.6em;
+    line-height: [_line_height_]em;
 }
 
 #body-container {
@@ -121,7 +121,7 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
 a:visited { color: var(--link); }
 
 h1, h2, h3, h4, h5, h6
-{ font-weight:bold; color:var(--header); margin-top: 24px; margin-bottom: [_font_size_]px; }
+{ font-weight:bold; color:var(--header); margin-top: 24px; margin-bottom: 0.5em; }
 
 h1 a, h2 a, h3 a, h4 a, h5 a, h6 a,
 h1:hover a, h2:hover a, h3:hover a, h4:hover a, h5:hover a, h6:hover a
@@ -142,11 +142,11 @@ h2.underline { padding-bottom: 8px; }
 h3.underline { padding-bottom: 6px; }
 h4.underline { padding-bottom: 4px; }
 h5.underline { padding-bottom: 2px; }
-h1 { font-size:1.75em; }
-h2 { font-size:1.5em; }
-h3 { font-size:1.30em; }
-h4 { font-size:1.15em; }
-h5 { font-size:1em; }
+h1 { font-size:1.75em; padding-bottom: 10px;}
+h2 { font-size:1.5em;  padding-bottom: 8px;}
+h3 { font-size:1.30em; padding-bottom: 6px;}
+h4 { font-size:1.15em; padding-bottom: 4px;}
+h5 { font-size:1em;    padding-bottom: 2px;}
 h6 { font-size:0.75em; }
 
 em, strong { color: var(--emphasis); }
@@ -170,8 +170,8 @@ p { margin-bottom: [_font_size_]px; margin-top: 0px; }
 /* ul, ol { margin: 0; padding: 0; } */
 
 pre {
-    margin-top: 10px;
-    margin-bottom: [_font_size_]px;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
     background-color: var(--b1-5);
     padding: 2px 4px;
     border: 1px solid var(--so1);
@@ -193,8 +193,46 @@ code {
 
 pre code { border:none; padding:0px; }
 
+ul.checklist {
+    margin: 1em 0 1em 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+/* span.circle { */
+    /* font-size: 1em; */
+    /* margin: 0; */
+    /* width: [_font_size_]px; */
+    /* height: [_font_size_]px; */
+    /* border: 1px solid; */
+    /* border-radius: 50% 50%; */
+    /* content:' '; */
+/* } */
+
 /* ul { margin: 4px 0; } */
-li { margin: 4px 0; }
+li { margin: 0px 0; }
+
+input[type="checkbox"] {
+  visibility: hidden;
+}
+input[type="checkbox"] + label:before {
+  border: 1px solid var(--border);
+  border-radius: calc([_font_size_]px / 5);
+  content: "\00a0";
+  display: inline-block;
+  font: [_font_size_]px/1em sans-serif;
+  height: [_font_size_]px;
+  position: relative;
+  top: -1px;
+  margin-right: calc([_font_size_]px / 3);
+  width: [_font_size_]px;
+}
+input[type="checkbox"]:checked + label:before {
+  background: var(--bg);
+  color: var(--border);
+  content: "\2713";
+  text-align: center;
+}
 
 .header-menu {
   position: fixed;

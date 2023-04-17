@@ -3,35 +3,35 @@
 ; uses make_html() to convert the M-ArkDown into html.
 ; ================================================
 
-file_path := FileSelect("1",A_ScriptDir,"Select markdown file:","Markdown (*.md)")
-If !file_path
-    ExitApp
+; file_path := FileSelect("1",A_ScriptDir,"Select markdown file:","Markdown (*.md)")
+; If !file_path
+    ; ExitApp
 
-SplitPath file_path,,&dir,,&file_title
+; SplitPath file_path,,&dir,,&file_title
 
-If FileExist(dir "\" file_title ".html")
-    FileDelete dir "\" file_title ".html"
+; If FileExist(dir "\" file_title ".html")
+    ; FileDelete dir "\" file_title ".html"
 
-md_txt := FileRead(file_path)
+; md_txt := FileRead(file_path)
 
-css := FileRead("style.css")
+; css := FileRead("style.css")
 
-options := {css:css
-          , font_name:"Segoe UI"
-          , font_size:16
-          , font_weight:400
-          , line_height:"1.6"} ; 1.6em - put decimals in "" for easier accuracy/handling.
+; options := {css:css
+          ; , font_name:"Segoe UI"
+          ; , font_size:16
+          ; , font_weight:400
+          ; , line_height:"1.6"} ; 1.6em - put decimals in "" for easier accuracy/handling.
 
-html := make_html(md_txt, options, true) ; true/false = use some github elements
+; html := make_html(md_txt, options, true) ; true/false = use some github elements
 
-FileAppend html, dir "\" file_title ".html", "UTF-8"
+; FileAppend html, dir "\" file_title ".html", "UTF-8"
 
-Run dir "\" file_title ".html" ; open and test
+; Run dir "\" file_title ".html" ; open and test
 
-dbg(_in) { ; AHK v2
-    Loop Parse _in, "`n", "`r"
-        OutputDebug "AHK: " A_LoopField
-}
+; dbg(_in) { ; AHK v2
+    ; Loop Parse _in, "`n", "`r"
+        ; OutputDebug "AHK: " A_LoopField
+; }
 
 ; ================================================
 ; make_html(_in_html, options_obj:="", github:=false)

@@ -44,7 +44,7 @@ ___This text has strong + emphasis.___ `___This text has strong + emphasis.___`
 
 ## Bold + Italics nesting
 
-You can *also **nest** the* code **in a *variety*** of different ways.
+You can *also **nest*** the code **in a *variety*** of different ways.
 
 ```
 You can *also **nest*** the code **in a *variety*** of different ways.

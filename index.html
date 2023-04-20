@@ -63,6 +63,7 @@ body {
     border-radius: 3px;
     padding: 10px 10px;
     transition-duration: 0.25s;
+    z-index: 10;
 }
 
 @media screen and (min-width: 1383px) {
@@ -88,7 +89,7 @@ body {
     overflow-y: auto;
     width: 431px;
     /* height: initial; */
-    height: 730px;
+    height: 800px;
     max-height: calc(100vh - 40px);
     transition-duration: 0.25s;
 }
@@ -111,6 +112,7 @@ body {
 :target.underline { border-color: var(--so4); }
 
 img { opacity: 0.5; }
+img:hover { opacity: 1; }
 
 table.normal tr th { background: var(--bg3); color: var(--header); }
 table.normal tr td { background: var(--bg2); }
@@ -155,7 +157,7 @@ del { font-weight: 400; }
 hr {
     color: transparent;
     border-top-style: solid;
-    border-top-width: 1px;
+    border-top-width: 4px;
     border-top-color: var(--border);
 }
 
@@ -261,10 +263,8 @@ input[type="checkbox"]:checked + label:before {
 summary { margin-bottom: 16px; }
 </style></head>
 
-<body><div id="toc-container"><div id="toc-icon" align="right">&#9776;</div><div id="toc-contents">
-<a href="https://thearkive.github.io/M-ArkDown_ahk2/" target="_blank" rel="noopener noreferrer"><div class="toc-item">Home</div></a>
-<a href="https://github.com/TheArkive/M-ArkDown_ahk2/archive/refs/heads/master.zip" target="_blank" rel="noopener noreferrer"><div class="toc-item">Download</div></a>
-<a href="https://github.com/TheArkive/M-ArkDown_ahk2" target="_blank" rel="noopener noreferrer"><div class="toc-item">Source</div></a><hr><a href="#markdown-cheatsheet"><div class="toc-item">• (M)ArkDown Cheatsheet</div></a>
+<body><div id="toc-container"><div id="toc-icon" align="right">&#9776;</div><div id="toc-contents"><a href="#markdown-cheatsheet"><div class="toc-item">• (M)ArkDown Cheatsheet</div></a>
+<a href="#reference-style-links"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Reference-Style Links</div></a>
 <a href="#emphasis-italics"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Emphasis (Italics)</div></a>
 <a href="#strong-bold"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Strong (Bold)</div></a>
 <a href="#emphasis-+-strong-italic-+-bold"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Emphasis + Strong (Italic + Bold)</div></a>
@@ -277,89 +277,242 @@ summary { margin-bottom: 16px; }
 <a href="#blockquote-code"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Blockquote code</div></a>
 <a href="#images"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Images</div></a>
 <a href="#horizontal-rule-&#60;hr&#62;"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Horizontal Rule &#60;hr&#62;</div></a>
-<a href="#unordered-lists"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Unordered Lists</div></a>
-<a href="#ordered-lists"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Ordered Lists</div></a>
+<a href="#lists"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Lists</div></a>
+<a href="#basic-list-formatting"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Basic List Formatting</div></a>
+<a href="#ordered-list-formatting-issues"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Ordered List Formatting Issues</div></a>
+<a href="#unordered-list-format"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Unordered List Format</div></a>
+<a href="#nesting-lists"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Nesting Lists</div></a>
+<a href="#custom-list-numbering-ordered"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Custom List Numbering (Ordered)</div></a>
+<a href="#custom-list-symbol-unordered"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Custom List Symbol (Unordered)</div></a>
 <a href="#tables"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Tables</div></a>
 <a href="#spoiler"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Spoiler</div></a>
 <a href="#thats-all-folks"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Thats all folks!</div></a>
 <a href="#to-do-list:"><div class="toc-item">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• To-Do List:</div></a></div></div><div id="body-container"><div id="main">
+<p></p>
 <h1 id="markdown-cheatsheet"  class="underline">(M)ArkDown Cheatsheet<a href="#markdown-cheatsheet"><span class="link">•</span></a></h1>
+<p></p>
 <p>This markdown spec has been designed to adhere to the GitHub standard of markdown, except for elements that deal with GitHub specific items, like commits, comments, etc.</p>
+<p></p>
 <p>A few extensions have also been added for flexibility.</p>
+<p></p>
 <p>The <code>&#92;</code> character is used to escape any character and translate it to the corresponding HTML entity, ie. <code>&#38;#&#91;code&#93;;</code>.</p>
+<p></p>
 <p>So this &#42;text&#42; is not formatted since it has the &#95;backslash&#95; prior to the markup elements.</p>
+<p></p>
 <pre><code>So this &#92;&#42;text&#92;&#42; is not formatted since it has the &#92;&#95;backslash&#92;&#95; prior to the markup elements.</code></pre>
-<p>It is not necessary to escape characters when using code blocks or inline code:</p>
-<pre><code>&#96;inline code&#96;
-
-&#96;&#96;&#96;
-code blocks
+<p></p>
+<p>It is not necessary to escape characters when using <code>inline code</code>.</p>
+<p></p>
+<pre><code>It is not necessary to escape characters when using &#96;inline code&#96;.</code></pre>
+<p></p>
+<p>It is also not necessary to escape characters using code blocks.</p>
+<p></p>
+<pre><code>&#96;&#96;&#96;
+This is a code block.
 &#96;&#96;&#96;</code></pre>
-<p>All these escape sequences should line up seamlessly with the GitHub spec.  There are some exceptions for this special abilities of this markdown variety, and these exceptions will be listed where applicable.</p>
+<p></p>
+<p>Check out the <a href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax" target="" rel="noopener noreferrer">Basic writing and formatting synatx</a> on GitHub.  I used this page as a reference for how to render the markdown, and most of the content listed on this link should work with this script.</p>
+<p></p>
+<h2 id="reference-style-links"  class="underline">Reference-Style Links<a href="#reference-style-links"><span class="link">•</span></a></h2>
+<p></p>
+<p>Reference style links and images can be put anywhere in the document, and the will not appear until used.</p>
+<p></p>
+<p>Create a reference-style link:</p>
+<p></p>
+<pre><code>&#91;name&#93;: link&#95;or&#95;image&#95;link "title"</code></pre>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>Note that there cannot be any whitespace before the <code>&#91;name&#93;</code>.  The <code>title</code> is put in the <em>title attribute</em> of the HTML code.  The <code>title</code> is optional.  At a minimum you must specify a reference <em>name</em>, and the <em>link</em>.</p>
+<p></p>
+<p>In this example, the reference links are defined at the bottom of this section, but you will not see them unless you look at the markdown document.  Defining the example reference links looks like this:</p>
+<p></p>
+<pre><code>&#91;ref tag 1&#93;: pic.jpg "test reference&#45;style image"
+
+&#91;google&#93;: https://www.google.com "googly eyes"
+
+&#91;yahoo&#93;: https://www.yahoo.com</code></pre>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>Example code:</p>
+<p></p>
+<pre><code>&#91;yahoo&#93;
+
+&#91;This is the google link&#93;&#91;google&#93; &#40;&#60;&#45; hover here&#41;
+
+&#33;&#91;optional alt text&#93;&#91;ref tag 1&#93;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><a href=" https://www.yahoo.com" title="" target="_blank" rel="noopener noreferrer">yahoo</a></p>
+<p></p>
+<p><a href=" https://www.google.com " title="googly eyes" target="_blank" rel="noopener noreferrer">This is the google link</a> (<- hover here)</p>
+<p></p>
+<p><img src=" pic.jpg " alt="optional alt text" title="test reference-style image"> <- hover here</p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>Note that when defining the url to a web page or image in a reference link, you can use relative links.</p>
+<p></p>
+<p>It is a best practice to not place reference link definitions inside other markdown (such as block-quotes, etc).  If you do, it may work, but unexpected things are also likely to happen.</p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
 <h2 id="emphasis-italics"  class="underline">Emphasis (Italics)<a href="#emphasis-italics"><span class="link">•</span></a></h2>
-<p><em>This text has emphasis.</em> <code>&#42;This text has emphasis.&#42;</code></p>
-<p><em>This text also has emphasis.</em> <code>&#95;This text also has emphasis.&#95;</code></p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>&#42;This text has emphasis.&#42;
+&#95;This text also has emphasis.&#95;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><em>This text has emphasis.</em></p>
+<p><em>This text also has emphasis.</em></p>
+<p></p>
 <h2 id="strong-bold"  class="underline">Strong (Bold)<a href="#strong-bold"><span class="link">•</span></a></h2>
-<p><strong>This text is strong.</strong> <code>&#42;&#42;This text is strong.&#42;&#42;</code></p>
-<p><strong>This text is strong.</strong> <code>&#95;&#95;This text is strong.&#95;&#95;</code></p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>&#42;&#42;This text is strong.&#42;&#42;
+&#95;&#95;This text is also strong.&#95;&#95;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><strong>This text is strong.</strong></p>
+<p><strong>This text is also strong.</strong></p>
+<p></p>
 <h2 id="emphasis-+-strong-italic-+-bold"  class="underline">Emphasis + Strong (Italic + Bold)<a href="#emphasis-+-strong-italic-+-bold"><span class="link">•</span></a></h2>
-<p><em><strong>This text has strong + emphasis.</strong></em> <code>&#42;&#42;&#42;This text has strong + emphasis.&#42;&#42;&#42;</code></p>
-<p><em><strong>This text has strong + emphasis.</strong></em> <code>&#95;&#95;&#95;This text has strong + emphasis.&#95;&#95;&#95;</code></p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>&#42;&#42;&#42;This text has strong + emphasis.&#42;&#42;&#42;
+&#95;&#95;&#95;This text has strong + emphasis.&#95;&#95;&#95;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><em><strong>This text has strong + emphasis.</strong></em></p>
+<p><em><strong>This text has strong + emphasis.</strong></em></p>
+<p></p>
 <h2 id="bold-+-italics-nesting"  class="underline">Bold + Italics nesting<a href="#bold-+-italics-nesting"><span class="link">•</span></a></h2>
-<p>You can <em>also <strong>nest</strong></em> the code <strong>in a <em>variety</em></strong> of different ways.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>You can &#42;also &#42;&#42;nest&#42;&#42;&#42; the code &#42;&#42;in a &#42;variety&#42;&#42;&#42; of different ways.</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p>You can <em>also <strong>nest</strong></em> the code <strong>in a <em>variety</em></strong> of different ways.</p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
 <p>And don't forget that starting a line with <code>&#42;&#42;&#42;</code> or <code>&#95;&#95;&#95;</code> expects to end with a corresponding <code>&#42;&#42;&#42;</code> or <code>&#95;&#95;&#95;</code>.</p>
-<p>When nesting, it generally helps for readability to alternate between using <code>&#42;</code> and <code>&#95;</code>, rather than using, ie. <code>&#42;</code> and <code>&#42;&#42;</code> together.</p>
+<p></p>
+<p>When nesting, it generally helps for readability to alternate between using <code>&#42;</code> and <code>&#95;</code>, rather than using, ie. <code>&#42;</code> and <code>&#42;&#42;</code>, or <code>&#95;</code> and <code>&#95;&#95;</code>.</p>
+<p></p>
 <h2 id="spacing"  class="underline">Spacing<a href="#spacing"><span class="link">•</span></a></h2>
+<p></p>
 <p>As with regular markdown, spacing is mostly automatic.  If you want to use manual line breaks use the backslash <code>&#92;</code>.</p>
-<p>Testing a manual line<br>break.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>Testing a manual line&#92;
 break.</code></pre>
-<p>Example without the backslash <code>&#92;</code>.</p>
-<p>Testing a manual line</p>
-<p>break.</p>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p>Testing a manual line<br>break.</p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>And without the backslash <code>&#92;</code> ...</p>
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>Testing a manual line
-break.</code></pre>
-<p>You can add additional blank lines like so:</p>
+break &#40;no backslash&#41;.</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p>Testing a manual line</p>
+<p>break (no backslash).</p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>You can also add additional blank lines.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>Here is a line with 2 blank lines beneath.&#92;
 &#92;
 &#92;
 Next visible line.</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
 <p>Here is a line with 2 blank lines beneath.<br><br><br>Next visible line.</p>
+<p></p>
 <h2 id="colors"  class="underline">Colors<a href="#colors"><span class="link">•</span></a></h2>
-<p><code>#FF0000 <span class="circle" style="background-color: #FF0000; width: 8px; height: 8px; display: inline-block; border: 2px solid #FF0000; border-radius: 50%;"></span></code></p>
-<p><code>rgb(0,255,0) <span class="circle" style="background-color: rgb(0,255,0); width: 8px; height: 8px; display: inline-block; border: 2px solid rgb(0,255,0); border-radius: 50%;"></span></code></p>
-<p><code>hsl(25, 100%, 50%) <span class="circle" style="background-color: hsl(25, 100%, 50%); width: 8px; height: 8px; display: inline-block; border: 2px solid hsl(25, 100%, 50%); border-radius: 50%;"></span></code></p>
-<p>Example code:</p>
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>&#96;#FF0000&#96;
 &#96;rgb&#40;0,255,0&#41;&#96;
 &#96;hsl&#40;25, 100%, 50%&#41;&#96;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><code>#FF0000 <span class="circle" style="background-color: #FF0000; width: 8px; height: 8px; display: inline-block; border: 2px solid #FF0000; border-radius: 50%;"></span></code></p>
+<p><code>rgb(0,255,0) <span class="circle" style="background-color: rgb(0,255,0); width: 8px; height: 8px; display: inline-block; border: 2px solid rgb(0,255,0); border-radius: 50%;"></span></code></p>
+<p><code>hsl(25, 100%, 50%) <span class="circle" style="background-color: hsl(25, 100%, 50%); width: 8px; height: 8px; display: inline-block; border: 2px solid hsl(25, 100%, 50%); border-radius: 50%;"></span></code></p>
+<p></p>
 <h2 id="check-lists"  class="underline">Check lists<a href="#check-lists"><span class="link">•</span></a></h2>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>Here is a checklist:
+&#45; &#91;x&#93; Checked item
+&#45; &#91; &#93; Unchecked item
+&#45; &#91;x&#93; Checked item
+&#45; &#91; &#93; Unchecked item</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
 <p>Here is a checklist:</p>
 <ul class="checklist">
 <li><input type="checkbox" id="check0" disabled="" checked=""><label for="check0">  Check item</label></li>
 <li><input type="checkbox" id="check1" disabled="" ><label for="check1">  Unchecked item</label></li>
 <li><input type="checkbox" id="check2" disabled="" checked=""><label for="check2">  Check item</label></li>
 <li><input type="checkbox" id="check3" disabled="" ><label for="check3">  Unchecked item</label></li></ul>
+<hr style="opacity: 0.25;">
+<p></p>
 <p>Check the included css file to see how you can customize the checkbox.  Search for <code>input&#91;type&#61;"checkbox"&#93;</code>.</p>
-<p>Example code:</p>
-<pre><code>Here is a checklist:
-&#45; &#91;x&#93; Check item
-&#45; &#91; &#93; Unchecked item
-&#45; &#91;x&#93; Check item
-&#45; &#91; &#93; Unchecked item</code></pre>
+<p></p>
 <h2 id="table-of-contents-and-navigation-code"  class="underline">Table of Contents and Navigation code<a href="#table-of-contents-and-navigation-code"><span class="link">•</span></a></h2>
+<p></p>
 <p>You can place the <code>&#60;toc&#62;</code> and <code>&#60;nav|...&#62;</code> tags anywhere in your document.</p>
+<p></p>
 <p>Example Code:</p>
+<p></p>
 <pre><code>&#60;toc&#62;
 &#60;nav|asdf1&#61;www.google.com|asdf2&#61;www.yahoo.com&#62;</code></pre>
+<p></p>
 <p>You can see the toc and nav icon in the top right: <code>☰</code></p>
-<p>This feature is not compatible with GitHub markdown.</p>
+<p></p>
+<p>This feature is not compatible with GitHub markdown.  But GitHub does the same thing automatically with an icon on the top-left of your markdown documents.</p>
+<p></p>
 <h2 id="heading-code"  class="underline">Heading code<a href="#heading-code"><span class="link">•</span></a></h2>
+<p></p>
 <p>Headings, with or without underline.  If you want automatic underline for h1 and h2 without adding <code>&#91;underline&#93;</code> tag, just change the css (usually setting border-bottom property is best).</p>
+<p></p>
 <p>For consistency with the <code>&#91;underline&#93;</code> tag, if you want to show brackets (<code>&#91;&#93;</code>) then use the <code>&#92;</code> to escape them.  Escaping brackets will still be compatible with GitHub markdown.</p>
+<p></p>
 <p>Note that the <code>&#91;underline&#93;</code> tag is not compatible with GitHub markdown.</p>
+<p></p>
 <p>Example Code:</p>
+<p></p>
 <pre><code>#### &#92;&#91;Heading 4&#92;&#93;
 ##### Heading 5&#91;underline&#93;
 ###### Heading &#60;6&#62;
@@ -369,79 +522,72 @@ Alt H1 &#40;one or more '&#61;' below&#41;
 
 Alt H2 &#40;one or more '&#45;' below&#41;
 &#45;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<hr style="border-top-width: 2px; border-top-style: solid; border-top-color: cyan;">
+<p></p>
 <p><details><summary class="spoiler">Click to see Headings</summary><blockquote><h4 id="&#91;heading-4&#93;" >&#91;Heading 4&#93;<a href="#&#91;heading-4&#93;"><span class="link">•</span></a></h4>
 <h5 id="heading-5"  class="underline">Heading 5<a href="#heading-5"><span class="link">•</span></a></h5>
 <h6 id="heading-<6>" >Heading <6><a href="#heading-<6>"><span class="link">•</span></a></h6>
+<p></p>
 <h1 id="alt-h1-one-or-more-'='-below" class="underline">Alt H1 (one or more '=' below)<a href="#alt-h1-one-or-more-'='-below"><span class="link">•</span></a></h1>
+<p></p>
 <h2 id="alt-h2-one-or-more-'-'-below" class="underline">Alt H2 (one or more '-' below)<a href="#alt-h2-one-or-more-'-'-below"><span class="link">•</span></a></h2></blockquote></details></p>
+<p></p>
+<hr style="border-top-width: 2px; border-top-style: solid; border-top-color: cyan;">
+<p></p>
 <h2 id="blockquote-code"  class="underline">Blockquote code<a href="#blockquote-code"><span class="link">•</span></a></h2>
-<blockquote><p>This is testing a blockquote.</p>
-<p><a href="https://www.google.com" target="<em>blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="</em>blank" rel="noopener noreferrer">Yahoo link</a></p>
-<p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
-<p><code>Even:</code></p>
-<h1 id="headings"  class="underline">Headings<a href="#headings"><span class="link">•</span></a></h1>
-<p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>&#92;</code>).</p>
-<blockquote><p>This is a nested blockquote.</p>
-<p><a href="https://www.google.com" target="<em>blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="</em>blank" rel="noopener noreferrer">Yahoo link</a></p>
-<p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
-<p><code>Even:</code></p>
-<h1 id="headings"  class="underline">Headings<a href="#headings"><span class="link">•</span></a></h1>
-<p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>&#92;</code>).</p></blockquote>
-<table class="normal"><tr></tr><tr><th align="right"><em>right&#58;</em></th><th align="left"><del>left</del></th><th align="center">&#58;center&#58;</th></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="center">bbbbbbbbbbbbbbbbbbbbbb</td><td align="right">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="center">2</td><td align="right">3</td></tr><tr><td align="left">manual line<br>break</td><td align="center">data2</td><td align="right">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="center"><strong>bold</strong>  <code>code</code></td><td align="right"><em>emphasis</em></td></tr></table></blockquote>
+<p></p>
 <p>Example Code:</p>
+<p></p>
 <pre><code>&#62; This is testing a blockquote.
 &#62;
-&#62; &#91;Google link&#93;&#40;https://www.google.com&#41; / &#91;Yahoo link&#93;&#40;https://www.yahoo.com&#41;
-&#62;
-&#62; Tada&#33;  &#42;Most nested markdown inside&#42; a blockquote is &#42;&#42;properly parsed&#42;&#42;.
-&#62; &#96;Even:&#96;
-&#62;
-&#62; # Headings
-&#62; are parsed, but are not added to the Table of Contents.&#92;
-&#62; You can add manual line breaks&#92;
-&#62; with a backslash &#40;&#96;&#92;&#96;&#41;.
-&#62;
-&#62; &#62; This is a nested blockquote.
-&#62; &#62;
-&#62; &#62; &#91;Google link&#93;&#40;https://www.google.com&#41; / &#91;Yahoo link&#93;&#40;https://www.yahoo.com&#41;
-&#62; &#62;
-&#62; &#62; Tada&#33;  &#42;Most nested markdown inside&#42; a blockquote is &#42;&#42;properly parsed&#42;&#42;.
-&#62; &#62; &#96;Even:&#96;
-&#62; &#62;
-&#62; &#62; # Headings
-&#62; &#62; are parsed, but are not added to the Table of Contents.&#92;
-&#62; &#62; You can add manual line breaks&#92;
-&#62; &#62; with a backslash &#40;&#96;&#92;&#96;&#41;.
-&#62;
-&#62; | &#42;right&#92;:&#42;:| &#126;&#126;left&#126;&#126;  |:&#92;:center&#92;::|
-&#62; |&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;|:&#45;&#45;&#45;&#45;&#45;&#45;&#45;:|&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;:|
-&#62; |aaaaaaaaaaaaaaaaaaaa        |bbbbbbbbbbbbbbbbbbbbbb        |ccccccccccccccccccccc         |
-&#62; |1        |2        |3         |
-&#62; |manual line&#60;br&#62;break | data2   | data3     |
-&#62; | &#91;link&#93;&#40;http://test.com&#41; | &#42;&#42;bold&#42;&#42;  &#96;code&#96; | &#42;emphasis&#42; |</code></pre>
+&#62; &#91;Google link&#93;&#40;https://www.google.com&#41; / &#91;Yahoo link&#93;&#40;https://www.yahoo.com&#41;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<blockquote><p>This is testing a blockquote.</p>
+<p></p>
+<p><a href="https://www.google.com" target="" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="" rel="noopener noreferrer">Yahoo link</a></p></blockquote>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>Note that you can put almost any markdown element into a blockquote, even another blockquote.</p>
+<p></p>
 <h2 id="images"  class="underline">Images<a href="#images"><span class="link">•</span></a></h2>
-<p>The 1st pic has width=200 set and is embedded in a hyperlink.</p>
-<p>The 2nd pic is separated by a space, and on the same line having height=200 set.  If a pic is too large to fit on the same line, it will usually be put on the next line down.</p>
-<p>The 3rd pic has no dimensions set and is full size.</p>
-<p>The 2nd set of parenthesis to specify the dimensions is not supported with the GitHub spec.  You would need to do this with HTML.</p>
-<p><a href="http://test_url.com" target="_blank" rel="noopener noreferrer"><img src="pic.jpg" width=200 alt="Label 1" title="Label 1"></a>  <img src="pic.jpg" height=200 alt="Label 2" title="Label 2"></p>
-<p>Third pic:<br><img src="pic.jpg" alt="Label 3" title="Label 3"></p>
+<p></p>
 <p>Example:</p>
-<pre><code>&#91;&#33;&#91;Label 1&#93;&#40;pic.jpg&#41;&#40;width&#61;200&#41;&#93;&#40;http://test&#95;url.com&#41;  &#33;&#91;Label 2&#93;&#40;pic.jpg&#41;&#40;height&#61;200&#41;
+<pre><code>&#91;&#33;&#91;Label 1&#93;&#40;pic.jpg&#41;&#40;width&#61;200&#41;&#93;&#40;https://www.google.com&#41;  &#33;&#91;Label 2&#93;&#40;pic.jpg&#41;&#40;height&#61;200&#41;
 
-Third pic:&#92;
-&#33;&#91;Label 3&#93;&#40;pic.jpg&#41;</code></pre>
+Third pic &#40;using reference&#45;style link&#41;:&#92;
+&#33;&#91;Label 3&#93;&#91;ref tag 1&#93;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><a href="https://www.google.com" target="" rel="noopener noreferrer"><img src="pic.jpg" width=200 alt="Label 1" title="Label 1"></a>  <img src="pic.jpg" height=200 alt="Label 2" title="Label 2"></p>
+<p></p>
+<p>Third pic (using reference-style link):<br><img src=" pic.jpg " alt="Label 3" title="test reference-style image"></p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>The 1st pic has width=200 set and is also a link.</p>
+<p></p>
+<p>The 2nd pic is separated by a space, and on the same line having height=200 set.  If a pic is too large/wide to fit on the same line, it will usually be put on the next line down.</p>
+<p></p>
+<p>The 3rd pic has no dimensions set and is full size, and is also a reference style link.  The reference link was defined above in the <a href="#reference-style-links" target="" rel="noopener noreferrer">Reference-Style Links</a> section.</p>
+<p></p>
+<p>The 2nd set of parenthesis to specify the dimensions is not supported with the GitHub spec.  You would need to do this with HTML.</p>
+<p></p>
 <h2 id="horizontal-rule-&#60;hr&#62;"  class="underline">Horizontal Rule &#60;hr&#62;<a href="#horizontal-rule-&#60;hr&#62;"><span class="link">•</span></a></h2>
+<p></p>
 <p>Just like regular markdown, the <code>&#60;hr&#62;</code> can be added by <code>&#45;&#45;&#45;</code>, <code>&#95;&#95;&#95;</code>, and <code>&#42;&#42;&#42;</code> (according to the GitHub spec).  In my version of markdown you can also use <code>&#61;&#61;&#61;</code>.</p>
+<p></p>
 <p>Another extra feature, not supported in GitHub, is the ability to define the style of the <code>&#60;hr&#62;</code> with an extra <code>&#91;style tag&#93;</code>.  Note that each individual style must NOT have spaces, meaning the <code>opacity:0.5</code> must be typed without spaces within the <code>&#91;style tag&#93;</code>.  Other styles not listed here can also be added and will function normally, as long as the style is separated by a space and contain no spaces.</p>
-<p><details><summary class="spoiler">Click to see &lt;hr&gt;</summary><hr style="border-top-style: solid; border-top-width: 4px; opacity: 0.25;">
-<hr style="border-top-style: solid; border-top-width: 4px; opacity: 0.25;">
-<hr style="border-top-style: solid; border-top-width: 4px; opacity: 0.25;">
-<hr style="border-top-color: red; border-top-style: solid;">
-<hr style="border-top-width: 2px; border-top-color: red; border-top-style: dashed; opacity:0.25;">
-<hr style="border-top-width: 4px; border-top-style: dashed; border-top-color: blue;">
-<hr style="border-top-width: 4px; border-top-style: double; border-top-color: pink; opacity:0.5;"></details></p>
-<p>Example Code:</p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>&#45;&#45;&#45;
 
 &#95;&#95;&#95;
@@ -455,106 +601,268 @@ Third pic:&#92;
 &#61;&#61;&#61;&#91;4px dashed blue&#93;
 
 &#42;&#42;&#42;&#91;4px double pink opacity:0.5&#93;</code></pre>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><details><summary class="spoiler">Click to see &lt;hr&gt;</summary><p>The first 3 are the default without a <code>&#91;tag&#93;</code>.</p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>The rest are custom.</p>
+<p></p>
+<hr style="border-top-color: red; border-top-style: solid;">
+<p></p>
+<hr style="border-top-width: 2px; border-top-color: red; border-top-style: dashed; opacity:0.25;">
+<p></p>
+<hr style="border-top-width: 4px; border-top-style: dashed; border-top-color: blue;">
+<p></p>
+<hr style="border-top-width: 4px; border-top-style: double; border-top-color: pink; opacity:0.5;"></details></p>
+<p></p>
+<p></p>
+<p></p>
 <p>Please note, that in order to show a <strong>double</strong> line you must specify a style width of at least 3px or greater to actually see both lines.</p>
+<p></p>
 <p>Also, in the GitHub spec, you don't make a <code>&#60;hr&#62;</code> with <code>&#61;&#61;&#61;</code>, unless you are making an h1 Header (see Header section).</p>
-<h2 id="unordered-lists"  class="underline">Unordered Lists<a href="#unordered-lists"><span class="link">•</span></a></h2>
+<p></p>
+<h2 id="lists"  class="underline">Lists<a href="#lists"><span class="link">•</span></a></h2>
+<p></p>
+<h3 id="basic-list-formatting" >Basic List Formatting<a href="#basic-list-formatting"><span class="link">•</span></a></h3>
+<p></p>
+<p>Ordered lists use only numbers, but you can set the format to one of the following formats:</p>
+<p></p>
+<table class="normal"><tr></tr><tr><th align="left">Symbol</th><th align="left">Type</th></tr><tr><td align="center"><code>A, a</code></td><td align="left">alphabetical numbering</td></tr><tr><td align="center"><code>I, i</code></td><td align="left">Roman numeral numbering</td></tr><tr><td align="center"><code>1</code></td><td align="left">normal Arabic numbering</td></tr></table>
+<p>By default, an ordered list is numbered with Arabic numbers (the numbers you are used to looking at).</p>
+<p></p>
+<p>Unordered lists use <code>&#42;</code>, <code>&#45;</code>, or <code>+</code>.</p>
+<p></p>
 <ul>
-<li>item 1</li>
-<li>item 2</li>
-<li>item 3<br>item 3 line 2<br>item 3 line 3<br>item 3 line 4</li>
-<li>item 4
-<ul>
-<li>item 1 <a href="http://link.com" target="_blank" rel="noopener noreferrer">a link</a></li>
-<li>item 2
-<ul>
-<li><em>item 1</em></li>
-<li>item 2<br><strong>item 2 line 2</strong>
-<ul>
-<li>item 1</li>
-<li>item 2</li></ul>
-</li></ul>
-</li></ul>
-</li>
-<li>item 5
-<ul>
-<li>item 1</li>
-<li>item 2</li></ul>
-</li></ul>
-
-<p>The above list is generated by:</p>
-<pre><code>&#42; item 1
-&#42; item 2
-&#42; item 3&#92;
-item 3 line 2&#92;
-item 3 line 3&#92;
-item 3 line 4
-+ item 4
-  + item 1 &#91;a link&#93;&#40;http://link.com&#41;
-  + item 2
-    + &#42;item 1&#42;
-    + item 2&#92;
-    &#42;&#42;item 2 line 2&#42;&#42;
-      &#45; item 1
-      &#45; item 2
-&#45; item 5
-  &#45; item 1
-  &#45; item 2</code></pre>
-<h2 id="ordered-lists"  class="underline">Ordered Lists<a href="#ordered-lists"><span class="link">•</span></a></h2>
-<ol type="A">
-<li>asdf 1</li>
-<li><strong>asdf 2</strong> text
+<li>This is an</li>
+<li>unordered list.</li>
+</ul>
+<p></p>
+<p>Ordered lists use <code>1.</code> or <code>1&#41;</code>.</p>
+<p></p>
 <ol type="1">
-<li>item 1</li>
-<li>text <em>item 2</em> text
-<ol type="i">
-<li>item 1</li>
-<li>text <a href="http://www.google.com" target="_blank" rel="noopener noreferrer">item 2</a> text</li>
-<li>item 3</li>
-<li>item 4
-<ol type="I">
-<li>asdf 1</li>
-<li><del>asdf 2</del> text</li>
-<li>asdf 3</li>
-<li>asdf 4</li>
-<li>asdf 5</li></ol>
-</li></ol>
-</li></ol>
-</li>
-<li>asdf 3
-<ol type="a">
-<li>blah 1</li>
-<li>text <code>blah 2</code></li>
-<li>blah 3</li></ol>
-</li>
-<li>asdf 4</li></ol>
+<li>This is an</li>
+<li>ordered list.</li>
+</ol>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<p>Alignment is important no matter what type of list you make.  A single list can be indented, but must be indented equally for all items.  Indenting a list will not change how it is displayed.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>    1. Item 1
+    2. Item 2
 
-<p>The above list is generated by:</p>
-<pre><code>A. asdf 1
-B. &#42;&#42;asdf 2&#42;&#42; text
-  1&#41; item 1
-  2&#41; text &#42;item 2&#42; text
-    i. item 1
-    ii. text &#91;item 2&#93;&#40;http://www.google.com&#41; text
-    iii. item 3
-    iii. item 4
-      I&#41; asdf 1
-      II&#41; &#126;&#126;asdf 2&#126;&#126; text
-      III&#41; asdf 3
-      I&#41; asdf 4
-      I&#41; asdf 5
-C. asdf 3
-  a&#41; blah 1
-  b&#41; text &#96;blah 2&#96;
-  c&#41; blah 3
-D. asdf 4</code></pre>
+&#45; Item 1
+&#45; Item 2</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<ol type="1">
+<li>Item 1</li>
+<li>Item 2</li>
+</ol>
+<p></p>
+<ul>
+<li>Item 1</li>
+<li>Item 2</li>
+</ul>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<h3 id="ordered-list-formatting-issues" >Ordered List Formatting Issues<a href="#ordered-list-formatting-issues"><span class="link">•</span></a></h3>
+<p></p>
+<p>Note than when making an ordered list, the numbers must be sequential.</p>
+<p></p>
+<p>If you don't use the proper numerical sequence in an ordered list, then list parsing is halted at the point where the proper sequence is broken.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>1. Item 1
+2. Item 2
+4. Item 3</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+
+<ol type="1">
+<li>Item 1</li>
+<li>Item 2</li>
+</ol>
+<p>4. Item 3</p>
+<hr style="opacity: 0.25;">
+<p></p>
+<h3 id="unordered-list-format" >Unordered List Format<a href="#unordered-list-format"><span class="link">•</span></a></h3>
+<p></p>
+<p>And when making an unordered list, the symbol you use must be the same for the entire list.</p>
+<p></p>
+<p>If you don't do this, then the point wher the bullet symbol changes will start a new list.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>&#45; Item 1
+&#45; Item 2
++ Item 3
++ Item 4</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+
+<ul>
+<li>Item 1</li>
+<li>Item 2</li>
+</ul>
+<ul>
+<li>Item 3</li>
+<li>Item 4</li>
+</ul>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<h3 id="nesting-lists" >Nesting Lists<a href="#nesting-lists"><span class="link">•</span></a></h3>
+<p></p>
+<p>You can nest ordered and unordered lists in any combination, and to any depth (theoretically).  When doing so you need to ensure that the number/bullet for the nested list item starts where the list item text starts, or goes past that point.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>&#45; Item 1
+  &#45; Item 2
+
+1. Item 1
+   1. Item 2
+
+&#42; Item 1        &#40;you can indent a full 4 spaces
+    &#42; Item 2    and go past the item text from the previous line&#41;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<ul>
+<li>Item 1</li><ul>
+<li>Item 2</li>
+</ul>
+</ul>
+<p></p>
+<ol type="1">
+<li>Item 1</li><ol type="i">
+<li>Item 2</li>
+</ol>
+</ol>
+<p></p>
+<ul>
+<li>Item 1</li><ul>
+<li>Item 2</li>
+</ul>
+</ul>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<h3 id="custom-list-numbering-ordered" >Custom List Numbering (Ordered)<a href="#custom-list-numbering-ordered"><span class="link">•</span></a></h3>
+<p></p>
+<p>For ordered lists, you can define custom list types by specifying <code>&#91;type&#61;?&#93;</code> on the first line of the list, where <code>?</code> is <code>1</code>, <code>A</code>, <code>a</code>, <code>I</code>, or <code>i</code>.  Make sure to not put spaces around the equal sign (<code>&#61;</code>).</p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>1. Item 1&#91;type&#61;I&#93;
+2. Item 2
+3. Item 3
+    &#45; Item 4
+    &#45; Item 5
+    &#45; Item 6
+        1. Item 7&#91;type&#61;A&#93;
+        2. Item 8
+        3. Item 9
+4. Item 10
+5. Item 11</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<ol type="I">
+<li>Item 1</li>
+<li>Item 2</li>
+<li>Item 3</li>
+<ul>
+<li>Item 4</li>
+<li>Item 5</li>
+<li>Item 6</li>
+<ol type="A">
+<li>Item 7</li>
+<li>Item 8</li>
+<li>Item 9</li>
+</ol>
+</ul>
+<li>Item 10</li>
+<li>Item 11</li>
+</ol>
+<p></p>
+<p>Note that the default numbering format for this script, and GitHub is as follows:</p>
+<p></p>
+<pre><code>1. Item 1                   &#40;type &#61; 1&#41;  Level 1
+    i. Item 2               &#40;type &#61; i&#41;  Level 2
+        a. Item 3           &#40;type &#61; a&#41;  Level 3 and beyond ...
+            ...             Type I and A &#40;upper case&#41; are not used by default</code></pre>
+<p></p>
+<p>This is not copatible with GitHub markdown.  For consistency, if you want to use <code>&#91;</code> and <code>&#93;</code> in your list items, escape them with <code>&#92;</code>, ie. <code>&#92;&#91;</code> and <code>&#92;&#93;</code>.</p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
+<h3 id="custom-list-symbol-unordered" >Custom List Symbol (Unordered)<a href="#custom-list-symbol-unordered"><span class="link">•</span></a></h3>
+<p></p>
+<p>For unordered lists you can define custom bullet symbols by specifying <code>&#91;type&#61;?&#93;</code> on the first line of the list, where <code>?</code> is <code>disc</code>, <code>circle</code>, <code>square</code>, or <code>none</code>.</p>
+<p></p>
+<p>Type <code>none</code> is useful if you want to use custom symbols (ie. emojis - ✅).</p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>&#45; item 1 &#40;disc&#41; &#91;type&#61;disc&#93;
+    &#45; item 2 &#40;circle&#41; &#91;type&#61;circle&#93;
+        &#45; item 3 &#40;square&#41; &#91;type&#61;square&#93;
+            &#45; ✅ item 4 &#40;none&#41; &#91;type&#61;none&#93;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<ul style="list-style-type:disc;">
+<li>item 1 (disc) </li><ul style="list-style-type:circle;">
+<li>item 2 (circle) </li><ul style="list-style-type:square;">
+<li>item 3 (square) </li><ul style="list-style-type:none;">
+<li>✅ item 4 (none) </li>
+</ul>
+</ul>
+</ul>
+</ul>
+<p></p>
+<p>Note that the default symbols for unordered lists are as follows:</p>
+<p></p>
+<pre><code>&#45; item 1            &#40;type &#61; disc&#41;   Level 1
+    &#45; item 2        &#40;type &#61; circle&#41; Level 2
+        &#45; item 3    &#40;type &#61; square&#41; Level 3 and beyond ...
+            ...</code></pre>
+<p></p>
+<p>This is not copatible with GitHub markdown.  For consistency, if you want to use <code>&#91;</code> and <code>&#93;</code> in your list items, escape them with <code>&#92;</code>, ie. <code>&#92;&#91;</code> and <code>&#92;&#93;</code>.</p>
+<p></p>
 <h2 id="tables"  class="underline">Tables<a href="#tables"><span class="link">•</span></a></h2>
-<p>Tables are the same as regular markdown except for one key difference:  you can set the alignment of the headers and data separately.</p>
-<p>Like markdown you use the colon <code>:</code> to determine alignment: <code>right:</code> , <code>:center:</code> , and <code>:left</code> or <code>left</code>.</p>
-<p>If you want to use a literal colon in a header you must escape it with backslash: <code>&#92;:</code>.  On GitHub this will also display a literal <code>:</code>.</p>
-<p>If you don't specify alignment for column headers, then they will use the alignment specified in the 2nd row, and if no alignment is specified, then the default center alignment will be used for column headers, just like the GitHub spec.</p>
-<p>Column headers and data will also take most inline formatting, like <em>emphasis</em> or <strong>strong</strong>.</p>
-<p>Example Code:</p>
-<pre><code>|               &#42;right&#92;:&#42;:| &#126;&#126;left&#126;&#126;             |     :center&#92;::      |
+<p></p>
+<p>Tables are the same as GitHub markdown except you can set the alignment of the headers and data separately.</p>
+<p></p>
+<p>Like markdown you use the colon <code>:</code> to determine alignment: <code>right:</code> , <code>:center:</code> , and <code>:left</code> or <code>left</code> (no colon).</p>
+<p></p>
+<p>If you want to use a literal colon in a header you must escape it with backslash: <code>&#92;:</code>.  Eescaping the <code>:</code> is compatible with GitHub.</p>
+<p></p>
+<p>If you don't specify alignment for column headers, then they will use the alignment specified in the 2nd row, and if no alignment is specified, then the default center alignment will be used for column headers, just like GitHub markdown.</p>
+<p></p>
+<p>Column headers and data will also take most inline formatting, like <em>emphasis</em>, <strong>strong</strong>, links, and others.</p>
+<p></p>
+<p>Example:</p>
+<p></p>
+<pre><code>|               &#42;right&#92;:&#42;:| &#126;&#126;left&#126;&#126;             |      center&#92;:       |
 |&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;|&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;:|:&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;:|
 |aaaaaaaaaaaaaaaaaaaa     |bbbbbbbbbbbbbbbbbbbbbb|ccccccccccccccccccccc|
 |1                        |2                     |3                    |
@@ -562,46 +870,51 @@ D. asdf 4</code></pre>
 | &#91;link&#93;&#40;http://test.com&#41; | &#42;&#42;bold&#42;&#42;  &#96;code&#96;     | &#42;emphasis&#42;          |
 
 The table/columns do not have to be perfectly spaced as shown above.</code></pre>
-<table class="normal"><tr></tr><tr><th align="right"><em>right&#58;</em></th><th align="left"><del>left</del></th><th align="center">center&#58;</th></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="right">bbbbbbbbbbbbbbbbbbbbbb</td><td align="center">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="right">2</td><td align="center">3</td></tr><tr><td align="left">manual line<br>break</td><td align="right">data2</td><td align="center">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="right"><strong>bold</strong>  <code>code</code></td><td align="center"><em>emphasis</em></td></tr></table>
+<p></p>
+<p>Result:</p>
+<p></p>
+<table class="normal"><tr></tr><tr><th align="right"><em>right&#58;</em></th><th align="left"><del>left</del></th><th align="center">center&#58;</th></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="right">bbbbbbbbbbbbbbbbbbbbbb</td><td align="center">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="right">2</td><td align="center">3</td></tr><tr><td align="left">manual line<br>break</td><td align="right">data2</td><td align="center">data3</td></tr><tr><td align="left"><a href="http://test.com" target="" rel="noopener noreferrer">link</a></td><td align="right"><strong>bold</strong>  <code>code</code></td><td align="center"><em>emphasis</em></td></tr></table>
 <h2 id="spoiler"  class="underline">Spoiler<a href="#spoiler"><span class="link">•</span></a></h2>
-<p>Shortcut code:</p>
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>&#60;spoiler&#61;Spoiler Title&#62;
-spoiler content&#33;
-...
-plus a little more in the example... just to show off :P
+spoiler content &#96;that&#96; is &#42;also&#42; formatted &#42;&#42;and&#42;&#42; stuff&#33;
 &#60;/spoiler&#62;</code></pre>
-<hr style="border-top-color: red; border-top-width: 3px;">
-<p><details><summary class="spoiler">Spoiler Title</summary><p>spoiler content <code>that</code> is <em>also</em> formatted <strong>and</strong> stuff!</p>
-<blockquote><p>This is testing a blockquote.</p>
-<p><a href="https://www.google.com" target="<em>blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="</em>blank" rel="noopener noreferrer">Yahoo link</a></p>
-<p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
-<p><code>Even:</code></p>
-<h1 id="headings"  class="underline">Headings<a href="#headings"><span class="link">•</span></a></h1>
-<p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>&#92;</code>).</p>
-<blockquote><p>This is a nested blockquote.</p>
-<p><a href="https://www.google.com" target="<em>blank" rel="noopener noreferrer">Google link</a> / <a href="https://www.yahoo.com" target="</em>blank" rel="noopener noreferrer">Yahoo link</a></p>
-<p>Tada!  <em>Most nested markdown inside</em> a blockquote is <strong>properly parsed</strong>.</p>
-<p><code>Even:</code></p>
-<h1 id="headings"  class="underline">Headings<a href="#headings"><span class="link">•</span></a></h1>
-<p>are parsed, but are not added to the Table of Contents.<br>You can add manual line breaks<br>with a backslash (<code>&#92;</code>).</p></blockquote>
-<table class="normal"><tr></tr><tr><th align="right"><em>right&#58;</em></th><th align="left"><del>left</del></th><th align="center">&#58;center&#58;</th></tr><tr><td align="left">aaaaaaaaaaaaaaaaaaaa</td><td align="center">bbbbbbbbbbbbbbbbbbbbbb</td><td align="right">ccccccccccccccccccccc</td></tr><tr><td align="left">1</td><td align="center">2</td><td align="right">3</td></tr><tr><td align="left">manual line<br>break</td><td align="center">data2</td><td align="right">data3</td></tr><tr><td align="left"><a href="http://test.com" target="_blank" rel="noopener noreferrer">link</a></td><td align="center"><strong>bold</strong>  <code>code</code></td><td align="right"><em>emphasis</em></td></tr></table></blockquote></details></p>
-<hr style="border-top-color: red; border-top-width: 3px;">
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><details><summary class="spoiler">Spoiler Title</summary><p>spoiler content <code>that</code> is <em>also</em> formatted <strong>and</strong> stuff!</p></details></p>
+<p></p>
+<hr style="opacity: 0.25;">
+<p></p>
 <p>Sadly, this feature is not available in this form on the GitHub spec.  But you can use the following HTML to get the same effect:</p>
+<p></p>
+<p>Example:</p>
+<p></p>
 <pre><code>&#60;details&#62;
-
-&#60;summary&#62;Tips for collapsed sections&#60;/summary&#62;
-
-### You can add a header
-
-You can add text within a collapsed section.
-
-You can add an image or a code block, too.
-
+&#60;summary&#62;Spoiler Title&#60;/summary&#62;
+spoiler content &#96;that&#96; is &#42;also&#42; formatted &#42;&#42;and&#42;&#42; stuff&#33;
 &#60;/details&#62;</code></pre>
+<p></p>
+<p>Result:</p>
+<p></p>
+<p><details></p>
+<p><summary>Spoiler Title</summary></p>
+<p>spoiler content <code>that</code> is <em>also</em> formatted <strong>and</strong> stuff!</p>
+<p></details></p>
+<p></p>
+<p>Any markdown or HTML element can go inside a spoiler.</p>
+<p></p>
 <h2 id="thats-all-folks"  class="underline">Thats all folks!<a href="#thats-all-folks"><span class="link">•</span></a></h2>
+<p></p>
 <p>Please remember, while this version of markdown is compatible with GitHub, the "extra features" are not.  I will mostly be using this for generating fancy offline docs for scripts and libraries, and for generating GibHub Pages resources for my GitHub repos.  Or as an offline means to check what a <code>README.md</code> might look like on GitHub.</p>
+<p></p>
 <h2 id="to-do-list:"  class="underline">To-Do List:<a href="#to-do-list:"><span class="link">•</span></a></h2>
+<p></p>
 <ul>
 <li>Add lots of :emojis: ?</li>
-<li>Add reference links</li></ul>
-</div></div></body></html>
+<li>Clean up ordered and unordered lists parsing. Currently they can't be properly nested, but parsing of ordered and unordered lists separately is working.</li>
+</ul>
+<p></p>
+<p></p></div></div></body></html>

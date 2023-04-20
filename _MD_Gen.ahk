@@ -3,7 +3,7 @@
 ; uses make_html() to convert the M-ArkDown into html.
 ; ================================================
 
-; file_path := FileSelect("1",A_ScriptDir,"Select markdown file:","Markdown (*.md)")
+; file_path := FileSelect("1",A_ScriptDir '\index.md',"Select markdown file:","Markdown (*.md)")
 ; If !file_path
     ; ExitApp
 
@@ -67,8 +67,11 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     body := ""
     toc := [], do_toc := false
     do_nav := false, nav_arr := []
-    ref := Map() ; for future use
+    ref := Map(), ref.CaseSense := false
+    foot := Map(), ref.CaseSense := false
+    
     link_ico := "•" ; 🔗 •
+    
     Static chk_id := 0 ; increments throughout entire document
     
     If (final)
@@ -77,11 +80,51 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     a := StrSplit(_in_text,"`n","`r")
     i := 0
     
+    ref_link_rgx := '^\x5B(\^)?([\w ]+)\x5D:([^"]+)(?:"([^"]+)")?'
+    in_code := false, code_tag := ""
+    
+    While (i < a.Length) { ; parse for ref-style links and footnotes first
+        i++, line := strip_comment(a[i])
+        
+        If !in_code && RegExMatch(line,"^(``{3,4})$",&c)
+            in_code := true, code_tag := c[1] ; , msgbox("IN CODE`n`n" line "`n" a[i+1] "`n" a[i+2] "`n" a[i+3])
+        
+        Else If in_code && RegExMatch(line,"^(``{3,4})",&c) && c[1]=code_tag
+            in_code := false, code_tag := ""
+        
+        If !in_code && RegExMatch(line,ref_link_rgx,&m) {
+            If m[1]
+                foot[m[2]] := {link:m[3],title:m[4]}    ; foot notes
+            Else
+                ref[m[2]] := {link:m[3],title:m[4]}     ; reference-style links / images
+        }
+    }
+    
+    i := 0
     While (i < a.Length) { ; ( ) \x28 \x29 ; [ ] \x5B \x5D ; { } \x7B \x7D
         
         i++, line := strip_comment(a[i])
         ul := "", ul2 := ""
         ol := "", ol2 := "", ol_type := ""
+        
+        If RegExMatch(line,ref_link_rgx) ; skip ref-style links and footnotes
+            Continue
+        
+        If RegExMatch(line,"^<nav")
+            Continue
+        
+        If (final && line = "<toc>") {
+            do_toc := True
+            Continue
+        }
+        
+        While RegExMatch(line,"\\$") { ; concat lines ending in '\'
+            If !line_inc(line := SubStr(line,1,-1) '<br>')
+                Break
+        }
+        
+        While (i < a.Length && RegExMatch(line,"\\$")) ; concatenate lines ending in `\` with next line
+            line := SubStr(line,1,-1) '<br>' strip_comment(a[++i])
         
         If final && RegExMatch(line, "^<nav\|") && a.Has(i+1) && (a[i+1] = "") {
             do_nav := True
@@ -90,15 +133,8 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
             Continue
         }
         
-        If (final && line = "<toc>") {
-            do_toc := True
-            Continue
-        }
-        
         code_block := "" ; code block
         If (line = "``````") || (line = "````````") {
-            ; dbg("CODEBLOCK")
-            
             match := line
             If !line_inc()
                 Break
@@ -115,8 +151,6 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         
         ; header h1 - h6
         If RegExMatch(line, "^(#+) (.+?)(?:\x5B[ \t]*(\w+)[ \t]*\x5D)?$", &n) {
-            ; dbg("HEADER H1-H6")
-            
             depth := StrLen(n[1]), title := inline_code(Trim(n[2]," `t"))
             _class := (depth <= 2 || n[3]="underline") ? "underline" : ""
             
@@ -183,9 +217,6 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         
         ; hr
         if RegExMatch(line, "^(\-{3,}|_{3,}|\*{3,}|={3,})(?:\x5B[ \t]*([^\x5D]+)*[ \t]*\x5D)?$", &match) {
-        
-            ; dbg("HR: " line)
-            
             hr_style := ""
             
             If match[2] {
@@ -201,194 +232,111 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 }
                 
             } Else {
-                hr_style := "border-top-style: solid; border-top-width: 4px; opacity: 0.25;"
+                hr_style := "opacity: 0.25;"
             }
             
             body .= (body?"`r`n":"") '<hr style="' hr_style '">'
             Continue
         }
         
-        blockquote := "" ; blockquote
-        While RegExMatch(line, "^\> *(.*)", &match) {
-            ; dbg("BLOCKQUOTE 1")
-            
-            blockquote .= (blockquote?"`r`n":"") match[1]
-            
-            If !line_inc()
-                Break
-        }
-        
-        
-        If (blockquote) {
-            ; dbg("BLOCKQUOTE 2")
+        ; blockquote
+        If RegExMatch(line, "^\> *(.*)") {
+            blockquote := ""
+            While RegExMatch(line, "^\> *(.*)", &match) {
+                blockquote .= (blockquote?"`r`n":"") match[1]
+                If !line_inc()
+                    Break
+            }
             
             body .= (body?"`r`n":"") "<blockquote>" make_html(blockquote,,github, false, "blockquote") "</blockquote>"
             Continue
         }
         
-        table := "" ; table
-        While RegExMatch(line, "^\|.*?\|$") {
-            ; dbg("TABLE 1")
+        ; table
+        If RegExMatch(line, "^\|.*?\|$") {
+            table := "", lines := 0
+            While RegExMatch(line, "^\|.*?\|$") {
+                table .= (table?"`r`n":"") line, lines++
+                If !line_inc()
+                    Break
+            }
             
-            table .= (table?"`r`n":"") line
+            If lines < 3
+                Continue
+            
+            If (table) {
+                b := [], h := [], body .= (body?"`r`n":"") '<table class="normal">'
+                
+                Loop Parse table, "`n", "`r"
+                {
+                    body .= "<tr>"
+                    c := StrSplit(A_LoopField,"|"), c.RemoveAt(1), c.RemoveAt(c.Length)
+                    
+                    If (A_Index = 1) {
+                        For i, t in c { ; table headers
+                            txt := inline_code(Trim(t," `t")) ; , align := "center"
+                            If RegExMatch(txt,"^(:)?(.+?)(:)?$",&n) {
+                                align := (n[1]&&n[3]) ? "center" : (n[3]) ? "right" : "left"
+                                txt := n[2], h.Push([align,txt])
+                            } Else
+                                h.Push(["",txt])
+                        }
+                        
+                    } Else If (A_Index = 2) {
+                        For i, t in c {
+                            align := "left" ; column alignment
+                            If RegExMatch(t,"^(:)?\-+(:)?$",&n)
+                                align := (n[1]&&n[2]) ? "center" : (n[2]) ? "right" : "left"
+                            b.Push(align)
+                            body .= '<th align="' (h[i][1]?h[i][1]:'center') '">' h[i][2] '</th>'
+                        }
+                        
+                    } Else {
+                        For i, t in c
+                            body .= '<td align="' b[i]  '">' Trim(inline_code(t)," `t") '</td>'
+                        
+                    }
+                    body .= "</tr>"
+                }
+                body .= "</table>"
+                Continue
+            }
+        }
+        
+        ; ordered and unordered lists
+        list_rgx := '^( *)'                     ; leading spaces (no tabs)
+                  . '([\*\+\-]|\d+(?:\.|\x29))' ; */+/- or 1. or 1)
+                  . '( +)'                      ; at least one more space
+                  . '(.+)'                      ; list content
+        
+        list := []
+        While RegExMatch(line,list_rgx,&n) {
+            itm := LT_spec(n[2])                ; bullet item ... [ -, *, +, 1., or 1) ]
+            tag := LT_tag(n[2])                 ; ol or ul
+            pre := n.Len[1]                     ; spaces before bullet item
+            lead := pre + n.Len[2] + n.Len[3]   ; # chars before actual list text
+            
+            txt := n[4]
+            While RegExMatch(txt,"\\$") && (i < a.Length) ; append lines ending in '\'
+                txt := SubStr(txt,1,-1) '<br>' strip_comment(a[++i])
+            
+            list.Push({itm:t, tag:tag, pre:pre, lead:lead, txt:txt, line:n[2] ' ' txt})
             
             If !line_inc()
                 Break
         }
         
-        If (table) {
-            ; dbg("TABLE 2")
-            
-            body .= (body?"`r`n":"") '<table class="normal">'
-            b := [], h := []
-            
-            Loop Parse table, "`n", "`r"
-            {
-                body .= "<tr>"
-                c := StrSplit(A_LoopField,"|"), c.RemoveAt(1), c.RemoveAt(c.Length)
-                
-                If (A_Index = 1) {
-                    For i, t in c { ; table headers
-                        txt := inline_code(Trim(t," `t")) ; , align := "center"
-                        If RegExMatch(txt,"^(:)?(.+?)(:)?$",&m) {
-                            align := (m[1]&&m[3]) ? "center" : (m[3]) ? "right" : "left"
-                            txt := m[2], h.Push([align,txt])
-                        } Else
-                            h.Push(["",txt])
-                    }
-                    
-                } Else If (A_Index = 2) {
-                    For i, t in c {
-                        align := "left"
-                        If RegExMatch(t,"^(:)?\-+(:)?$",&m)
-                            align := (m[1]&&m[2]) ? "center" : (m[2]) ? "right" : "left"
-                        b.Push(align)
-                        body .= '<th align="' (h[i][1]?h[i][1]:align) '">' h[i][2] '</th>'
-                    }
-                    
-                } Else {
-                    For i, t in c
-                        body .= '<td align="' b[i]  '">' Trim(inline_code(t)," `t") '</td>'
-                    
-                }
-                body .= "</tr>"
-            }
-            body .= "</table>"
+        d := 1 ; depth - for make_list()
+        err := false ; checking for poorly formatted ordered lists
+        While list.Length { ; add all lists, normally is one, but can be multiple
+            body .= '`r`n' make_list(list)
+            If err
+                Break
             Continue
         }
         
-        ; unordered lists
-        If RegExMatch(line, "^( *)[\*\+\-] (.+?)(\\?)$", &n) {
-            
-            ; dbg("UNORDERED LISTS")
-            
-            While RegExMatch(line, "^( *)([\*\+\-] )?(.+?)(\\?)$", &n) { ; previous IF ensures first iteration is a list item
-                ul2 := ""
-                
-                If !n[1] && n[2] && n[3] {
-                    ul .= (ul?"</li>`r`n":"") "<li>" make_html(n[3],,github,false,"ul item")
-                    
-                    If n[4]
-                        ul .= "<br>"
-                    
-                    If !line_inc()
-                        Break
-                    
-                    Continue
-
-                } Else If !n[2] && n[3] {
-                    ul .= make_html(n[3],,github,false,"ul item append")
-                    
-                    If n[4]
-                        ul .= "<br>"
-                    
-                    If !line_inc()
-                        Break
-                    
-                    Continue
-                
-                } Else If n[1] && n[3] {
-                    
-                    While RegExMatch(line, "^( *)([\*\+\-] )?(.+?)(\\?)$", &n) {
-                        If (Mod(StrLen(n[1]),2) || !n[1] || !n[3])
-                            Break
-                        
-                        ul2 .= (ul2?"`r`n":"") SubStr(line, 3)
-                        
-                        If !line_inc()
-                            Break
-                    }
-                    
-                    ul .= "`r`n" make_html(ul2,,github,false,"ul")
-                    Continue
-                }
-                
-                If !line_inc()
-                    Break
-            }
-        }
-        
-        If (ul) {
-            body .= (body?"`r`n":"") "<ul>`r`n" ul "</li></ul>`r`n"
-            Continue
-        }
-        
-        ; ordered lists
-        If RegExMatch(line, "^( *)[\dA-Za-z]+(?:\.|\x29) +(.+?)(\\?)$", &match) {
-            
-            ; dbg("ORDERED LISTS")
-            
-            While RegExMatch(line, "^( *)([\dA-Za-z]+(?:\.|\x29) )?(.+?)(\\?)$", &match) { ; previous IF ensures first iteration is a list item
-                ol2 := ""
-                
-                If !match[1] && match[2] && match[3] {
-                    ol .= (ol?"</li>`r`n":"") "<li>" make_html(match[3],,github,false,"ol item")
-                    
-                    If (A_Index = 1)
-                        ol_type := 'type="' RegExReplace(match[2], '[\.\) ]','') '"'
-                    
-                    If match[4]
-                        ol .= "<br>"
-                    
-                    If !line_inc()
-                        Break
-                    
-                    Continue
-
-                } Else If !match[2] && match[3] {
-                    ol .= make_html(match[3],,github,false,"ol item append")
-                    
-                    If match[4]
-                        ol .= "<br>"
-                    
-                    If !line_inc()
-                        Break
-                    
-                    Continue
-                
-                } Else If match[1] && match[3] {
-                    
-                    While RegExMatch(line, "^( *)([\dA-Za-z]+(?:\.|\x29) )?(.+?)(\\?)$", &match) {
-                        If (Mod(StrLen(match[1]),2) || !match[1] || !match[3])
-                            Break
-                        
-                        ol2 .= (ol2?"`r`n":"") SubStr(line, 3)
-                        
-                        If !line_inc()
-                            Break
-                    }
-                    
-                    ol .= "`r`n" make_html(ol2,,github,false,"ol")
-                    Continue
-                }
-                
-                If !line_inc()
-                    Break
-            }
-        }
-        
-        If (ol) {
-            body .= (body?"`r`n":"") "<ol " ol_type ">`r`n" ol "</li></ol>`r`n"
+        If list.Length {                ; if no errs in list, then list array should be blank at this point
+            body .= '`r`n' AtoT(list)   ; dump remaining plain text
             Continue
         }
         
@@ -399,27 +347,9 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         If RegExMatch(md_type,"^(ol|ul)") { ; ordered/unordered lists
             body .= (body?"`r`n":"") inline_code(line)
             Continue
-        } Else If RegExMatch(line, "^(<nav|<toc)") { ; nav toc
-            Continue
-        } Else If RegExMatch(line, "\\$") { ; manual line break at end \
-            body .= (body?"`r`n":"") "<p>"
-            reps := 0
-            
-            While RegExMatch(line, "(.+)?\\$", &match) {
-                reps++
-                body .= ((A_Index>1)?"<br>":"") inline_code(match[1])
-                
-                If !line_inc()
-                    Break
-            }
-            
-            body .= line ? ((reps?"<br>":"") inline_code(line) "</p>") : "</p>"
-        } Else If line {
-            If md_type != "header"
-                body .= (body?"`r`n":"") "<p>" inline_code(line) "</p>"
-            Else
-                body .= (body?"`r`n":"") inline_code(line)
         }
+        
+        body .= (body?"`r`n":"") "<p>" inline_code(line) "</p>"
     }
     
     ; processing toc ; try to process exact height
@@ -499,6 +429,75 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     ; Local Functions
     ; =======================================================================
     
+    ; GitHub spec for lists:
+    ; https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#lists
+    make_list(_L_) { ; o props = {itm, tag, pre, lead, txt}
+        _tag := _L_[1].tag, _itm := _L_[1].itm
+        _pre := _L_[1].pre, _lead := _L_[1].lead, t := ""
+        _txt := inline_code(_L_[1].txt) ; process escapes first line of list to determine optional list style
+        
+        rgx := '\x5B *(?:type=([1AaIi]|disc|circle|square|none)) *\x5D$'
+        If (_typ := RegExMatch(_txt,rgx,&y) ? y[1] : '')    ; if list style found ...
+            _L_[1].txt := RegExReplace(_L_[1].txt,rgx)      ; ... remove it after recording it
+        
+        If (_tag = 'ol')
+            t := (_typ) ? (' type="' _typ '"') : (' type="' ((d=1) ? '1' : (d=2) ? 'i' : 'a') '"')
+        Else
+            t := (_typ) ? (' style="list-style-type:' _typ ';"') : ''
+        
+        list_html := '<' _L_[1].tag t '>' ; GitHub list levels ... 1.  >  i.  >  a.
+        end_tag := '</' _L_[1].tag '>'
+        
+        _i := 0
+        While (_L_.Length) {
+            o := _L_[1]
+            
+            If (o.pre >= _lead) { ; step in on proper indent (check GitHub spec)          o.pre != _pre
+                d++ ; increase depth
+                If (r:=make_list(_L_)) && err         ; if ordered list isn't properly numbered return only the 'good' part of the list
+                    return list_html '`r`n' end_tag ; ... and quit parsing
+                list_html .= r
+                
+                Continue
+            } Else If (o.pre < _pre) { ; stepping back
+                d-- ; decrease depth
+                return '`r`n' list_html '`r`n' end_tag
+            } Else If (o.tag != _tag)                   ; if changing unordered list types ...
+                   || (o.tag="ul" && o.itm != _itm) {   ; ... or if next bullet type (*, +, -) doesn't match previous
+                d := 1 ; reset depth for new list
+                return '`r`n' list_html '`r`n' end_tag  ; ... this starts a new list, according to GitHub spec
+            }
+            
+            _i++
+            
+            If ( o.tag = 'ol' && _i != Integer(o.itm) ) {   ; if ordered list numbers are not in sequence ...
+                err := true                                 ; ... flag err and return the 'good' part of the list
+                return '`r`n' list_html '`r`n' end_tag
+            }
+            
+            list_html .= '`r`n<li>' inline_code(o.txt) '</li>'
+            
+            _tag := o.tag, _itm := o.itm
+            _pre := o.pre, _lead := o.lead
+            _L_.RemoveAt(1)
+        }
+        
+        list_html .= '`r`n' end_tag
+        
+        return list_html
+    }
+    
+    AtoT(_a_) { ; for dumping the remaining text of a poorly formated list
+        _txt_ := '<p>'
+        For i, o in _a_
+            _txt_ .= ((i>1)?'<br>':'') o.line
+        return _txt_ '</p>'
+    }
+    
+    LT_tag(_in_) => IsInteger(t:=Trim(_in_,".)")) ? "ol" : IsAlpha(t) ? "" : "ul" ; list type
+    
+    LT_spec(_in_) => IsInteger(t:=Trim(_in_,".)")) ? Integer(t) : t
+    
     inline_code(_in) {
         output := _in, check := ""
         
@@ -526,14 +525,42 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
                 output := StrReplace(output,x[0],"&#" Ord(x[2]) ";")
             
             ; image
-            While RegExMatch(output, "!\x5B *([^\x5D]*) *\x5D\x28 *([^\x29]+) *\x29(\x28 *[^\x29]* *\x29)?", &x) && !IsInCode() {
+            While RegExMatch(output, "!\x5B *([^\x5D]*) *\x5D\x28 *([^\x29]+) *\x29(?:\x28 *([^\x29]+) *\x29)?", &x) && !IsInCode() {
                 dims := (dm:=Trim(x[3],"()")) ? " " dm : ""
                 output := StrReplace(output, x[0], '<img src="' x[2] '"' dims ' alt="' x[1] '" title="' x[1] '">',,,1)
             }
             
+            ; image reference-style
+            While RegExMatch(output, "!\x5B *([^\x5D]*) *\x5D\x5B *([^\x5D]+) *\x5D(?:\x28 *([^\x29]+) *\x29)?", &x)
+               && ref.Has(x[2]) ; ref link stored
+               && !IsInCode() {
+                dims := x[3] ? " " x[3] : ""
+                output := StrReplace(output, x[0], '<img src="' ref[x[2]].link '"' dims ' alt="' x[1] '" title="' ref[x[2]].title '">',,,1)
+            }
+            
             ; link / url
-            While RegExMatch(output, "\x5B *([^\x5D]+) *\x5D\x28 *([^\x29]+) *\x29", &x) && !IsInCode()
-                output := StrReplace(output, x[0], '<a href="' x[2] '" target="_blank" rel="noopener noreferrer">' x[1] "</a>",,,1)
+            While RegExMatch(output, "\x5B *([^\x5D]+) *\x5D\x28 *([^\x29]+) *\x29", &x) && !IsInCode() {
+                rel := RegExMatch(x[2],"^#[\w\-]+") ? "" : 'noopener noreferrer'
+                tgt := RegExMatch(x[2],"^#[\w\-]+") ? "" : '_blank'
+                output := StrReplace(output, x[0], '<a href="' x[2] '" target="" rel="noopener noreferrer">' x[1] "</a>",,,1)
+            }
+            
+            ; link / url reference-style 1
+            While RegExMatch(output, "\x5B *([^\x5D]+) *\x5D\x5B *([^\x5D]+) *\x5D", &x)
+               && ref.Has(x[2])
+               && !IsInCode() {
+                ; rel := 
+                output := StrReplace(output, x[0]
+                        , '<a href="' ref[x[2]].link '" title="' ref[x[2]].title '" target="_blank" rel="noopener noreferrer">' x[1] "</a>",,,1)
+            }
+            
+            ; link / url reference-style 2
+            While RegExMatch(output, "\x5B *([^\x5D]+) *\x5D", &x)
+               && ref.Has(x[1])
+               && !IsInCode()
+                output := StrReplace(output, x[0]
+                        , '<a href="' ref[x[1]].link '" title="' ref[x[1]].title '" target="_blank" rel="noopener noreferrer">'
+                        . (ref[x[1]].title?ref[x[1]].title:x[1]) "</a>",,,1)
             
             ; strong + emphasis (bold + italics)
             While (RegExMatch(output, "(?<![\*\w])[\*]{3,3}([^\*]+)[\*]{3,3}", &x)
@@ -563,15 +590,14 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
         IsInCode() => ((st := x.Pos[0]-6) < 1) ? false : RegExMatch(output,"<code> *\Q" x[0] "\E",,st) ? true : false
     }
     
-    line_inc(esc:=false) {
-        (i < a.Length) ? (line := strip_comment(a[++i]), result:=true) : (line := "", result:=false) ; use <= ???
-        esc ? escape_txt(line) : ""
+    line_inc(concat:="") {
+       (i < a.Length) ? (line := (concat?concat:"") strip_comment(a[++i]), result:=true) : (line := "", result:=false)
         return result
     }
     
     strip_comment(_in_) => RTrim(RegExReplace(_in_,"^(.+)<\!\-\-[^>]+\-\->","$1")," `t")
     
-    convert(_in_) { ; convert markup chars so they don't get recognized
+    convert(_in_) { ; convert markup chars so they don't get recognized, a forced kind of escaping in certain contexts
         output := _in_
         For i, v in ["&","<",">","\","*","_","-","=","~","``","[","]","(",")","!","{","}"]
             output := StrReplace(output,v,"&#" Ord(v) ";")
@@ -579,37 +605,4 @@ make_html(_in_text, options:="", github:=false, final:=true, md_type:="") {
     }
     
     rpt(x,y) => StrReplace(Format("{:-" y "}","")," ",x) ; string repeat ... x=str, y=iterations
-    
-    escape_txt(_in_) { ; not yet used ...
-        output := _in_
-        While r := RegExMatch(output,"\\(.)",&_m)
-            output := StrReplace(output,_m[0],"&#" Ord(_m[1]) ";")
-        return output
-    }
-    
-    ; IsInTag(tag, haystack) { ; no longer used ...
-        ; start := InStr(haystack, tag) + StrLen(tag)
-        ; sub_str := SubStr(haystack, start)
-        
-        ; tag_start := InStr(sub_str,"<")
-        ; tag_end := InStr(sub_str,">")
-        
-        ; return ((!tag_start && tag_end) || (tag_end < tag_start)) ? true : false
-    ; }
-    
-    ; IsInCode(needle, haystack) { ; no longer used ...
-        ; start := InStr(haystack, needle) + StrLen(needle)
-        ; sub_str := SubStr(haystack, start)
-        
-        ; code_start := InStr(sub_str,"<code>")
-        ; code_end := InStr(sub_str,"</code>")
-        
-        ; return ((!code_start && code_end) || (code_end < code_start)) ? true : false
-    ; }
-    
-    ; ContainsTag(haystack) { ; no longer used ...
-        ; If !(RegExMatch(haystack,"<([^>]+)>[^<]+</([^>]+)>",&_m))
-            ; return false
-        ; return (_m[1]=_m[2]) ? true : false
-    ; }
 }
